@@ -27,6 +27,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "viiper.h"
 #include "schemes.h"
 
 #define MIN(a,b) (a>b?b:a)
@@ -40,46 +41,7 @@
 #define LINE_OFFSET 1
 #define LINES_AFTER 1
 #define CW 2 /* cell width */
-#define SHORTHELP "%s [OPTIONS] [FIELDSIZE]\n"
-#define LONGHELP \
-	"OPTIONS:\n" \
-	"    -h(elp)\n" \
-	"FIELDSIZE:\n" \
-	"    WxH (width 'x' height)\n" \
-	"    defaults to 30x20\n" \
-	"\n" \
-	"Keybindings:\n" \
-	"    hjkl: move left/down/up/right\n" \
-	"    p:    pause / unpause\n" \
-	"    r:    start a new game\n" \
-	"    q:    quit\n"
 
-struct snake {
-	int r; /* row */
-	int c; /* column */
-	struct snake* next; /* points to tail */
-};
-struct item { //TODO: make it more abstract (type should encode glyph, points, etc)
-	int r; /* row */
-	int c; /* column */
-	int t; /* type */
-	int s; /* spawn time (for bonus) */
-	char* g; /* glyph */
-	struct item* prev;
-	struct item* next;
-};
-enum direction {
-	NONE,
-	NORTH,
-	EAST,
-	SOUTH,
-	WEST,
-};
-enum item_type {
-	NO_ITEM,
-	FOOD,
-	BONUS,
-};
 struct game {
 	int w; /* field width */
 	int h; /* field height */
@@ -96,34 +58,6 @@ struct opt {
 	int l; /* initial snake length */
 	int s; //TODO: initial snake speed
 } op;
-
-int viiper(void);
-void snake_advance (void);
-void spawn_item (int type);
-void consume_item (struct item* i);
-void show_playfield (void);
-void snake_append (struct snake* s, int row, int col);
-void init_snake();
-void quit (void);
-int getctrlseq (void);
-void move_ph (int line, int col);
-void clamp_fieldsize (void);
-void timer_setup (int enable);
-void signal_setup (void);
-void signal_handler (int signum);
-void screen_setup (int enable);
-void raw_mode(int enable);
-enum event {
-	/* for getctrlseq() */
-	CTRSEQ_NULL    =  0,
-	CTRSEQ_EOF     = -1,
-	CTRSEQ_INVALID = -2,
-	CTRSEQ_MOUSE   = -3,
-	CTRSEQ_CURSOR_LEFT  = -7,
-	CTRSEQ_CURSOR_DOWN  = -8,
-	CTRSEQ_CURSOR_UP    = -9,
-	CTRSEQ_CURSOR_RIGHT = -10,
-};
 
 int main (int argc, char** argv) {
 	/* defaults: */
@@ -162,7 +96,7 @@ int viiper(void) {
 
 	timer_setup(1);
 
-	spawn_item(FOOD);
+	spawn_item(FOOD_10);
 
 	for(;;) {
 		switch (getctrlseq()) {
@@ -170,6 +104,7 @@ int viiper(void) {
 		case 'j': if (g.d != NORTH) g.n = SOUTH; break;
 		case 'k': if (g.d != SOUTH) g.n = NORTH; break;
 		case 'l': if (g.d != WEST)  g.n = EAST;  break;
+		case 'p': /*TODO: pause*/ break;
 		case 'r': /*TODO:restart*/ return 0;
 		case 'q': return 0;
 		case CTRL_'L':
@@ -189,11 +124,11 @@ void snake_advance (void) {
 	int new_row = g.s->r +(g.d==SOUTH) -(g.d==NORTH);
 	int new_col = g.s->c +(g.d==EAST)  -(g.d==WEST);
 
-	//TODO: detect food hit and spawn a new food.
+	/* detect food hit and spawn a new food */
 	for (struct item* i = g.i; i; i = i->next) {
 		if (i->r == new_row && i->c == new_col) {
 			consume_item (i);
-			spawn_item(FOOD);
+			spawn_item(FOOD_10);
 		}
 	}
 
@@ -228,7 +163,6 @@ try_again:
 
 	//3. get item from category TODO
 	struct item* new_item = malloc (sizeof(struct item));
-	new_item->g = "🍎";
 	new_item->r = row;
 	new_item->c = col;
 	new_item->t = type;
@@ -244,8 +178,8 @@ void consume_item (struct item* i) {
 	struct item* successor = i->next;
 
 	switch (i->t) {
-	case FOOD:
-		g.p+=10; //TODO: multiple types for different points?
+	case FOOD_10:
+		g.p+=10;
 		snake_append(g.s, 0,0);   /* position doesn't matter, as item */
 		break;       /* will be reused as the head before it is drawn */
 	case BONUS:
@@ -304,7 +238,7 @@ void show_playfield (void) {
 	/* print item queue */
 	for (struct item* i = g.i; i; i = i->next) {
 		move_ph (i->r+LINE_OFFSET, i->c*CW+COL_OFFSET);
-		print (i->g);
+		print (op.scheme->item[i->t]);
 	}
 }
 
