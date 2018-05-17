@@ -27,6 +27,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "schemes.h"
+
 #define MIN(a,b) (a>b?b:a)
 #define MAX(a,b) (a>b?a:b)
 #define CLAMP(a,m,M) (a<m?m:(a>M?M:a))
@@ -68,8 +70,8 @@ struct item { //TODO: make it more abstract (type should encode glyph, points, e
 };
 enum direction {
 	NONE,
-	EAST,
 	NORTH,
+	EAST,
 	SOUTH,
 	WEST,
 };
@@ -90,7 +92,7 @@ struct game {
 } g;
 
 struct opt {
-	void* scheme; //TODO
+	struct scheme* scheme;
 	int l; /* initial snake length */
 	int s; //TODO: initial snake speed
 } op;
@@ -128,7 +130,7 @@ int main (int argc, char** argv) {
 	g.w = 30; //two-char-width
 	g.h = 20;
 	op.l = 10;
-	op.scheme = NULL;
+	op.scheme = &unic0de; //TODO: expose to getopt()
 
 	int optget;
 	opterr = 0; /* don't print message on unrecognized option */
@@ -241,7 +243,6 @@ void consume_item (struct item* i) {
 	struct item* predecessor = i->prev;
 	struct item* successor = i->next;
 
-	if (i->t == FOOD) {
 	switch (i->t) {
 	case FOOD:
 		g.p+=10; //TODO: multiple types for different points?
@@ -265,61 +266,38 @@ void consume_item (struct item* i) {
 
 void show_playfield (void) {
 	/* top border */
-	print("╔═");
-	printm (g.w/2-4/2, "══");
-	printf ("╡ %04d ╞", g.p);
-	printm(g.w/2-4/2, "══");
-	print ("═╗\n");
+	print(BORDER(T,L));
+	printm (g.w/2-4/2, BORDER(T,C)); //TODO: i bet this breaks in dec mode
+	printf ("%s %04d %s", BORDER(S,L), g.p, BORDER(S,R));
+	printm(g.w/2-4/2, BORDER(T,C));
+	printf ("%s\n", BORDER(T,R));
 
 	/* main area */
-	for (int row = 0; row < g.h; row++) {
-		print ("║ ");
-		printm (g.w, "  ");
-		print (" ║\n");
-	}
+	for (int row = 0; row < g.h; row++)
+		printf ("%s%*s%s\n", BORDER(C,L), CW*g.w, "", BORDER(C,R));
+
 	/* bottom border */
-	print("╚═");
-	printm (g.w, "══");
-	print ("═╝\n");
+	print(BORDER(B,L));
+	printm (g.w, BORDER(B,C));
+	print (BORDER(B,R));
 
 	/* print snake */
 	struct snake* last = NULL;
 	for (struct snake* s = g.s; s; s = s->next) {
 		move_ph (s->r+COL_OFFSET, s->c*CW+LINE_OFFSET);
 		
-		int predecessor = (last==NULL)?-1:
+		int predecessor = (last==NULL)?NONE:
 			(last->r < s->r) ? NORTH:
 			(last->r > s->r) ? SOUTH:
 			(last->c > s->c) ? EAST:
-			(last->c < s->c) ? WEST:-1;
-		int successor = (s->next == NULL)?-2:
+			(last->c < s->c) ? WEST:NONE;
+		int successor = (s->next == NULL)?NONE:
 			(s->next->r < s->r) ? NORTH:
 			(s->next->r > s->r) ? SOUTH:
 			(s->next->c > s->c) ? EAST:
-			(s->next->c < s->c) ? WEST:-2;
+			(s->next->c < s->c) ? WEST:NONE;
 
-#define GOES(dir1, dir2) \
-	((predecessor == dir1 || successor == dir1) && \
-	 (predecessor == dir2 || successor == dir2))
-
-		/* head (NOTE: direction is inverted in this section) */
-		     if /*SOUTH*/ GOES(NORTH,-1) print ("⢿⡿");
-		else if /*WEST*/ GOES(EAST,-1)   print ("⢾⣿");
-		else if /*NORTH*/ GOES(SOUTH,-1) print ("⣾⣷");
-		else if /*EAST*/ GOES(WEST,-1)   print ("⣿⡷");
-		/* body */
-		else if GOES(NORTH,SOUTH) print ("⡇⢸");
-		else if GOES(WEST,EAST)   print ("⣉⣉");
-		else if GOES(NORTH,EAST)  print ("⢇⣈");
-		else if GOES(EAST,SOUTH)  print ("⡎⢉");
-		else if GOES(SOUTH,WEST)  print ("⡉⢱");
-		else if GOES(WEST,NORTH)  print ("⣁⡸");
-		/* tail */
-		else if GOES(NORTH,-2) print ("⢇⡸");
-		else if GOES(EAST,-2)  print ("⢎⣉");
-		else if GOES(SOUTH,-2) print ("⡎⢱");
-		else if GOES(WEST,-2)  print ("⣉⡱");
-#undef GOES
+		print (op.scheme->snake[predecessor][successor]);
 		last = s;
 	}
 
