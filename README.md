@@ -1,5 +1,7 @@
 # VIIper - a Snake Clone for Unicode-compatible Terminals
 
+TODO: find a better name
+
 ## Dependencies
 
  - A VTE based terminal (like GNOME Terminal and a whole bunch of others)
@@ -20,6 +22,7 @@ r to restart, p to pause, q to quit.
  - timer, score, increasing speed
  - special items: slower snake, shorter snake, etc.
  - input buffer (so fast 180° turns get executed)
+ - wall-wrap-around mode?
 
 ## Notes
 

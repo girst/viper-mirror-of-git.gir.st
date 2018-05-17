@@ -16,7 +16,7 @@ struct scheme {
 
 	char* snake[5][5]; /* [predecessor][successor] */
 
-	char* item[NUM_ITEMS];
+	char* item[NUM_FOODS];
 };
 
 struct scheme unic0de = {
@@ -62,7 +62,9 @@ struct scheme unic0de = {
 	},
 
 	.item = {
-		[FOOD_10] = "🍎"
+		[FOOD_5] = "🍐",
+		[FOOD_10] = "🍎",
+		[FOOD_20] = "🥑",
 	},
 };
 

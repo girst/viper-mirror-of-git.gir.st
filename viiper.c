@@ -96,7 +96,7 @@ int viiper(void) {
 
 	timer_setup(1);
 
-	spawn_item(FOOD_10);
+	spawn_item(FOOD, rand() % NUM_FOODS); //TODO: shape distribution, so bigger values get selected less
 
 	for(;;) {
 		switch (getctrlseq()) {
@@ -128,7 +128,7 @@ void snake_advance (void) {
 	for (struct item* i = g.i; i; i = i->next) {
 		if (i->r == new_row && i->c == new_col) {
 			consume_item (i);
-			spawn_item(FOOD_10);
+			spawn_item(FOOD, rand() % NUM_FOODS);
 		}
 	}
 
@@ -151,7 +151,7 @@ void snake_advance (void) {
 	g.s = new_head;
 }
 
-void spawn_item (int type) {
+void spawn_item (int type, int value) {
 	int row, col;
 try_again:
 	row = rand() % g.h;
@@ -166,6 +166,7 @@ try_again:
 	new_item->r = row;
 	new_item->c = col;
 	new_item->t = type;
+	new_item->v = value;
 	new_item->s = time(0);
 	if (g.i) g.i->prev = new_item;
 	new_item->next = g.i;
@@ -178,8 +179,12 @@ void consume_item (struct item* i) {
 	struct item* successor = i->next;
 
 	switch (i->t) {
-	case FOOD_10:
-		g.p+=10;
+	case FOOD:
+		switch (i->v) {
+		case FOOD_5:  g.p +=  5; break;
+		case FOOD_10: g.p += 10; break;
+		case FOOD_20: g.p += 20; break;
+		}
 		snake_append(g.s, 0,0);   /* position doesn't matter, as item */
 		break;       /* will be reused as the head before it is drawn */
 	case BONUS:
@@ -238,7 +243,8 @@ void show_playfield (void) {
 	/* print item queue */
 	for (struct item* i = g.i; i; i = i->next) {
 		move_ph (i->r+LINE_OFFSET, i->c*CW+COL_OFFSET);
-		print (op.scheme->item[i->t]);
+		if (i->t == FOOD) print (op.scheme->item[i->v]);
+		else if (i->t==BONUS) /* TODO: print bonus */;
 	}
 }
 

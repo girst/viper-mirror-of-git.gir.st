@@ -38,17 +38,22 @@ enum direction {
 };
 enum item_type {
 	NO_ITEM,
+	FOOD,
+	BONUS,
+};
+enum food_value {
 	FOOD_5,
 	FOOD_10,
 	FOOD_20,
-	BONUS,
-
-	NUM_ITEMS,
+	NUM_FOODS,
+};
+enum bonus_value {
+	NUM_BONI,
 };
 
 int viiper(void);
 void snake_advance (void);
-void spawn_item (int type);
+void spawn_item (int type, int value);
 void consume_item (struct item* i);
 void show_playfield (void);
 void snake_append (struct snake* s, int row, int col);
