@@ -102,7 +102,7 @@ int viiper(void) {
 	spawn_item(FOOD, rand() % NUM_FOODS); //TODO: shape distribution, so bigger values get selected less
 
 	for(;;) {
-		switch (getctrlseq()) {
+		switch (getctrlseq()) { //TODO: fast 180° turns don't get executed -- buffer at least two keystrokes (or ctrlseqs)
 case '+': g.f++;timer_setup(1);break;
 case '#': if (g.f > 1) g.f--;timer_setup(1); break;
 		case 'h': if (g.d != EAST)  g.n = WEST;  break;
@@ -137,7 +137,7 @@ void snake_advance (void) {
 		}
 	}
 
-	if (new_row >= g.h || new_col >= g.w || new_row < 0 || new_col < 0)
+	if (new_row >= g.h || new_col >= g.w || new_row < 0 || new_col < 0) //TODO: we die 1 cell too early when hitting the right wall
 		exit(1); //TODO: longjump?
 
 	struct snake* new_head;
@@ -230,6 +230,7 @@ void show_playfield (void) {
 
 	/* print snake */
 	struct snake* last = NULL;
+	int color = -1; //TODO: that's a hack
 	for (struct snake* s = g.s; s; s = s->next) {
 		move_ph (s->r+COL_OFFSET, s->c*CW+LINE_OFFSET);
 		
@@ -244,8 +245,11 @@ void show_playfield (void) {
 			(s->next->c > s->c) ? EAST:
 			(s->next->c < s->c) ? WEST:NONE;
 
+		printf ("\033[%sm", color==-1?"91":color?"92":"32");
 		print (op.scheme->snake[predecessor][successor]);
+		printf ("\033[0m");
 		last = s;
+		color = (color+1) % 2;
 	}
 
 	/* print item queue */
