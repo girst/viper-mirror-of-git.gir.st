@@ -17,6 +17,10 @@ struct scheme {
 	char* snake[5][5]; /* [predecessor][successor] */
 
 	char* item[NUM_FOODS];
+
+	/* for en-/disabling e.g. DEC charset: */
+	char* init_seq;
+	char* reset_seq;
 };
 
 struct scheme unic0de = {

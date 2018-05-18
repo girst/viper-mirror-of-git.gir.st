@@ -29,6 +29,10 @@ struct item {
 	struct item* prev;
 	struct item* next;
 };
+struct directions {
+	int d; /* direction */
+	struct directions* next;
+};
 enum direction {
 	NONE,
 	NORTH,
@@ -60,6 +64,8 @@ void snake_append (struct snake* s, int row, int col);
 void init_snake();
 void quit (void);
 int getctrlseq (void);
+void append_movement (int d);
+int get_movement (void);
 void move_ph (int line, int col);
 void clamp_fieldsize (void);
 void timer_setup (int enable);

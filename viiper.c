@@ -45,19 +45,19 @@
 struct game {
 	int w; /* field width */
 	int h; /* field height */
-	struct snake* s; /* snek */ //TODO: rename to S
-	struct item* i; /* items (food, boni) */
 	int d; /* direction the snake is looking */
-	int n;/* direction to move on next tick */
 	int t; /* time of game start */
 	int p; /* score */ //TODO: rename?
-	float f; /* speed in moves per second */ //TODO: rename
+	float f; /* speed in moves per second */ //TODO: rename :XXX
+	struct snake* s; /* snek */ //TODO: rename to S
+	struct item* i; /* items (food, boni) */
+	struct directions* n;/* next direction events to process */
 } g;
 
 struct opt {
-	struct scheme* scheme;
 	int l; /* initial snake length */
 	int s; /* initial snake speed */
+	struct scheme* scheme;
 } op;
 
 int main (int argc, char** argv) {
@@ -65,7 +65,7 @@ int main (int argc, char** argv) {
 	g.w = 30; //two-char-width
 	g.h = 20;
 	op.l = 10;
-	op.s = 2;
+	op.s = 8;
 	op.scheme = &unic0de; //TODO: expose to getopt() once more sets are available
 
 	int optget;
@@ -94,7 +94,7 @@ quit:
 int viiper(void) {
 	init_snake();
 	show_playfield ();
-	g.d = g.n = EAST;
+	g.d = EAST;
 	g.f = op.s;
 
 	timer_setup(1);
@@ -102,13 +102,18 @@ int viiper(void) {
 	spawn_item(FOOD, rand() % NUM_FOODS); //TODO: shape distribution, so bigger values get selected less
 
 	for(;;) {
-		switch (getctrlseq()) { //TODO: fast 180° turns don't get executed -- buffer at least two keystrokes (or ctrlseqs)
-case '+': g.f++;timer_setup(1);break;
-case '#': if (g.f > 1) g.f--;timer_setup(1); break;
-		case 'h': if (g.d != EAST)  g.n = WEST;  break;
-		case 'j': if (g.d != NORTH) g.n = SOUTH; break;
-		case 'k': if (g.d != SOUTH) g.n = NORTH; break;
-		case 'l': if (g.d != WEST)  g.n = EAST;  break;
+		switch (getctrlseq()) {
+		case '+': g.f++;timer_setup(1);break; //TODO: temporary, to set speed
+		case '#': if (g.f > 1) g.f--;timer_setup(1); break; //TODO: temporary, to set speed
+
+		case CTRSEQ_CURSOR_LEFT:
+		case 'h': append_movement(WEST);  break;
+		case CTRSEQ_CURSOR_DOWN:
+		case 'j': append_movement(SOUTH); break;
+		case CTRSEQ_CURSOR_UP:
+		case 'k': append_movement(NORTH); break;
+		case CTRSEQ_CURSOR_RIGHT:
+		case 'l': append_movement(EAST);  break;
 		case 'p': /*TODO: pause*/ break;
 		case 'r': /*TODO:restart*/ return 0;
 		case 'q': return 0;
@@ -125,7 +130,17 @@ case '#': if (g.f > 1) g.f--;timer_setup(1); break;
 }
 
 void snake_advance (void) {
-	g.d = g.n;
+	if (g.n) {/* new direction in the buffer */
+		int possible_new_dir = get_movement();
+		if (g.d == EAST && possible_new_dir == WEST) goto ignore_new;
+		if (g.d == WEST && possible_new_dir == EAST) goto ignore_new;
+		if (g.d == NORTH && possible_new_dir == SOUTH) goto ignore_new;
+		if (g.d == SOUTH && possible_new_dir == NORTH) goto ignore_new;
+		g.d = possible_new_dir; /* pop off a new direction if available*/
+ignore_new:
+		1;
+	}
+
 	int new_row = g.s->r +(g.d==SOUTH) -(g.d==NORTH);
 	int new_col = g.s->c +(g.d==EAST)  -(g.d==WEST);
 
@@ -137,7 +152,8 @@ void snake_advance (void) {
 		}
 	}
 
-	if (new_row >= g.h || new_col >= g.w || new_row < 0 || new_col < 0) //TODO: we die 1 cell too early when hitting the right wall
+	/*NOTE:no idea why I have to use g.w+1, but otherwise we die too early*/
+	if (new_row >= g.h || new_col >= g.w+1 || new_row < 0 || new_col < 0)
 		exit(1); //TODO: longjump?
 
 	struct snake* new_head;
@@ -193,7 +209,7 @@ void consume_item (struct item* i) {
 		snake_append(g.s, 0,0);   /* position doesn't matter, as item */
 		break;       /* will be reused as the head before it is drawn */
 	case BONUS:
-		//handle bonus
+		//TODO: handle bonus
 		break;
 	}
 
@@ -339,12 +355,35 @@ int getctrlseq (void) {
 	return 2;
 }
 
+void append_movement (int dir) {
+	struct directions* new_event = malloc (sizeof(struct directions));
+	new_event->d = dir;
+	new_event->next = NULL;
+	if (g.n == NULL) {
+		g.n = new_event;
+	} else {
+		struct directions* n;
+		for (n = g.n; n->next; n = n->next);
+		n->next = new_event;
+	}
+}
+
+int get_movement (void) {
+	if (g.n == NULL) return -1;
+
+	int retval = g.n->d;
+	struct directions* delet_this = g.n;
+	g.n = g.n->next;
+	free(delet_this);
+	return retval;
+}
+
 void move_ph (int line, int col) {
 	/* move printhead to zero-indexed position */
 	printf ("\033[%d;%dH", line+1, col+1);
 }
 
-void clamp_fieldsize (void) {
+void clamp_fieldsize (void) { //TODO: use
 	/* clamp field size to terminal size and mouse maximum: */
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -364,20 +403,17 @@ void timer_setup (int enable) {
 	tbuf.it_interval.tv_usec = (1000000/g.f)-1; /*WARN: 1 <= g.f <= 999999*/
 
 	if (enable) {
-		g.t = time(NULL);
+		g.t = time(NULL);//TODO: interferes with 'pause'
 		tbuf.it_value.tv_sec  = tbuf.it_interval.tv_sec;
 		tbuf.it_value.tv_usec = tbuf.it_interval.tv_usec;
-		if (setitimer(ITIMER_REAL, &tbuf, NULL) == -1) {
-			perror("setitimer");
-			exit(1);
-		}
 	} else {
 		tbuf.it_value.tv_sec  = 0;
 		tbuf.it_value.tv_usec = 0;
-		if ( setitimer(ITIMER_REAL, &tbuf, NULL) == -1 ) {
-			perror("setitimer");
-			exit(1);
-		}
+	}
+
+	if ( setitimer(ITIMER_REAL, &tbuf, NULL) == -1 ) {
+		perror("setitimer");
+		exit(1);
 	}
 
 }
@@ -419,9 +455,9 @@ void screen_setup (int enable) {
 		printf ("\033[s\033[?47h"); /* save cursor, alternate screen */
 		printf ("\033[H\033[J"); /* reset cursor, clear screen */
 		printf ("\033[?25l"); /* hide cursor */
-		//print (op.scheme->init_seq); /* swich charset, if necessary */
+		print (op.scheme->init_seq); /* swich charset, if necessary */
 	} else {
-		//print (op.scheme->reset_seq); /* reset charset, if necessary */
+		print (op.scheme->reset_seq); /* reset charset, if necessary */
 		printf ("\033[?25h"); /* show cursor */
 		printf ("\033[?47l\033[u"); /* primary screen, restore cursor */
 		raw_mode(0);
