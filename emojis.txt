@@ -1,0 +1,212 @@
+=== Emojis to possibly use from ===
+
+Compiled from [1].
+
+== Food Emojis[1] ==
+
+=Natural Food=
+    🍇 Grapes
+    🍈 Melon
+    🍉 Watermelon
+    🍊 Tangerine
+    🍋 Lemon
+    🍌 Banana
+    🍍 Pineapple
+    🍎 Red Apple
+    🍏 Green Apple
+    🍐 Pear
+    🍑 Peach
+    🍒 Cherries
+    🍓 Strawberry
+    🥝 Kiwi Fruit
+    🍅 Tomato
+    🥥 Coconut
+    🥑 Avocado
+    🍆 Eggplant
+    🥔 Potato
+    🥕 Carrot
+    🌽 Ear of Corn
+    🥒 Cucumber
+    🥦 Broccoli
+    🍄 Mushroom
+    🥜 Peanuts
+    🌰 Chestnut
+
+=Baked Goods=
+    🍞 Bread
+    🥐 Croissant
+    🥖 Baguette Bread
+    🥨 Pretzel
+    🥞 Pancakes
+    🍩 Doughnut
+    🍪 Cookie
+    🎂 Birthday Cake
+    🍰 Shortcake
+    🥧 Pie
+
+=Animal Produce=
+    🧀 Cheese Wedge
+    🍖 Meat on Bone
+    🍗 Poultry Leg
+    🥩 Cut of Meat
+    🥓 Bacon
+
+=Fast Food=
+    🍔 Hamburger
+    🍟 French Fries
+    🍕 Pizza
+    🌭 Hot Dog
+    🥪 Sandwich
+    🌮 Taco
+    🌯 Burrito
+    🍿 Popcorn
+
+=Japanese Food (useful)=
+    🍝 Spaghetti
+    🍢 Oden
+    🍣 Sushi
+    🍤 Fried Shrimp
+    🍡 Dango
+
+=Sweets=
+    🍦 Soft Ice Cream
+    🍧 Shaved Ice
+    🍨 Ice Cream
+    🍫 Chocolate Bar
+    🍬 Candy
+    🍭 Lollipop
+    🍮 Custard
+    🍯 Honey Pot
+
+== Bonus Emoji ==
+    💎 Gem Stone
+    💣 Bomb
+    ☠️ Skull and Crossbones
+    ⏰ Alarm Clock
+    🎈 Balloon
+    🎉 Party Popper
+    🔋 Battery
+    💾 Floppy Disk
+    💿 Optical Disk
+    📀 DVD
+    💡 Light Bulb
+    💴 Yen Banknote
+    💵 Dollar Banknote
+    💶 Euro Banknote
+    💷 Pound Banknote
+    💸 Money With Wings
+    📦 Package
+    ✂️ Scissors
+    🔑 Key
+    🗝️ Old Key
+    💊 Pill
+    🚪 Door
+    🎺 Trumpet
+    🎸 Guitar
+    🎷 Saxophone
+    🎰 Slot Machine
+    🎱 Pool 8 Ball
+    🎟 Admission Tickets
+    🎫 Ticket
+    🏆 Trophy
+    🏅 Sports Medal
+    🥇 1st Place Medal
+    🥈 2nd Place Medal
+    🥉 3rd Place Medal
+    👀 Eyes
+    👑 Crown
+    💓 Beating Heart
+    💔 Broken Heart
+    💕 Two Hearts
+    💖 Sparkling Heart
+    💗 Growing Heart
+    💙 Blue Heart
+    💚 Green Heart
+    💛 Yellow Heart
+    🧡 Orange Heart
+    💜 Purple Heart
+    🖤 Black Heart
+    💤 Zzz
+    💢 Anger Symbol
+    🛑 Stop Sign
+    🕛 Twelve O’clock
+    🕧 Twelve-Thirty
+    🕐 One O’clock
+    🕜 One-Thirty
+    🕑 Two O’clock
+    🕝 Two-Thirty
+    🕒 Three O’clock
+    🕞 Three-Thirty
+    🕓 Four O’clock
+    🕟 Four-Thirty
+    🕔 Five O’clock
+    🕠 Five-Thirty
+    🕕 Six O’clock
+    🕡 Six-Thirty
+    🕖 Seven O’clock
+    🕢 Seven-Thirty
+    🕗 Eight O’clock
+    🕣 Eight-Thirty
+    🕘 Nine O’clock
+    🕤 Nine-Thirty
+    🕙 Ten O’clock
+    🕥 Ten-Thirty
+    🕚 Eleven O’clock
+    🕦 Eleven-Thirty
+    ⌛ Hourglass Done
+    ⏳ Hourglass Not Done
+    ⌚ Watch
+    🌀 Cyclone
+    🃏 Joker
+    🔔 Bell
+    ⛔ No Entry
+    🚫 Prohibited
+    🔃 Clockwise Vertical Arrows
+    🔄 Counterclockwise Arrows Button
+    🔙 Back Arrow
+    🔚 End Arrow
+    🔛 On! Arrow
+    🔜 Soon Arrow
+    🔝 Top Arrow
+    ❓ Question Mark
+    ❔ White Question Mark
+    ❕ White Exclamation Mark
+    ❗ Exclamation Mark
+    💯 Hundred Points
+    ▪ Black Small Square
+    ▫ White Small Square
+    ◻ White Medium Square
+    ◼ Black Medium Square
+    ◽ White Medium-Small Square
+    ◾ Black Medium-Small Square
+    ⬛ Black Large Square
+    ⬜ White Large Square
+    🔶 Large Orange Diamond
+    🔷 Large Blue Diamond
+    🔸 Small Orange Diamond
+    🔹 Small Blue Diamond
+    🔺 Red Triangle Pointed Up
+    🔻 Red Triangle Pointed Down
+    💠 Diamond With a Dot
+    🔲 Black Square Button
+    🔳 White Square Button
+    ⚪ White Circle
+    ⚫ Black Circle
+    🔴 Red Circle
+    🔵 Blue Circle
+    
+= Decoration? =
+    🌷 Tulip
+    🌱 Seedling
+    🏵️ Rosette
+    🌸 Cherry Blossom
+    🌺 Hibiscus
+    🌹 Rose
+    🌻 Sunflower
+    🌼 Blossom
+    🥀 Wilted Flower
+    💮 White Flower
+
+-- 
+
+[1]: https://emojipedia.org/
