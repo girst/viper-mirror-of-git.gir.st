@@ -45,18 +45,19 @@
 struct game {
 	int w; /* field width */
 	int h; /* field height */
-	struct snake* s; /* snek */
+	struct snake* s; /* snek */ //TODO: rename to S
 	struct item* i; /* items (food, boni) */
 	int d; /* direction the snake is looking */
 	int n;/* direction to move on next tick */
 	int t; /* time of game start */
-	int p; /* score */
+	int p; /* score */ //TODO: rename?
+	float f; /* speed in moves per second */ //TODO: rename
 } g;
 
 struct opt {
 	struct scheme* scheme;
 	int l; /* initial snake length */
-	int s; //TODO: initial snake speed
+	int s; /* initial snake speed */
 } op;
 
 int main (int argc, char** argv) {
@@ -64,7 +65,8 @@ int main (int argc, char** argv) {
 	g.w = 30; //two-char-width
 	g.h = 20;
 	op.l = 10;
-	op.scheme = &unic0de; //TODO: expose to getopt()
+	op.s = 2;
+	op.scheme = &unic0de; //TODO: expose to getopt() once more sets are available
 
 	int optget;
 	opterr = 0; /* don't print message on unrecognized option */
@@ -93,6 +95,7 @@ int viiper(void) {
 	init_snake();
 	show_playfield ();
 	g.d = g.n = EAST;
+	g.f = op.s;
 
 	timer_setup(1);
 
@@ -100,6 +103,8 @@ int viiper(void) {
 
 	for(;;) {
 		switch (getctrlseq()) {
+case '+': g.f++;timer_setup(1);break;
+case '#': if (g.f > 1) g.f--;timer_setup(1); break;
 		case 'h': if (g.d != EAST)  g.n = WEST;  break;
 		case 'j': if (g.d != NORTH) g.n = SOUTH; break;
 		case 'k': if (g.d != SOUTH) g.n = NORTH; break;
@@ -204,11 +209,14 @@ void consume_item (struct item* i) {
 }
 
 void show_playfield (void) {
+	//int score_width = g.p > 9999?6:4;
+	int score_width = 4;             //        v- = the -| spacer |-
+	float half_width = (g.w - score_width/CW - 2)/2.0; //TODO: this whole endavour is ugly
 	/* top border */
 	print(BORDER(T,L));
-	printm (g.w/2-4/2, BORDER(T,C)); //TODO: i bet this breaks in dec mode
-	printf ("%s %04d %s", BORDER(S,L), g.p, BORDER(S,R));
-	printm(g.w/2-4/2, BORDER(T,C));
+	printm (half_width, BORDER(T,C)); //TODO: i bet this breaks in dec mode
+	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
+	printm ((int)(half_width+.5), BORDER(T,C));
 	printf ("%s\n", BORDER(T,R));
 
 	/* main area */
@@ -246,6 +254,10 @@ void show_playfield (void) {
 		if (i->t == FOOD) print (op.scheme->item[i->v]);
 		else if (i->t==BONUS) /* TODO: print bonus */;
 	}
+
+	//TODO: temporarily print speed
+	move_ph (g.h+LINE_OFFSET, g.w);
+	printf ("%f", g.f);
 }
 
 void snake_append (struct snake* s, int row, int col) {
@@ -345,7 +357,7 @@ void clamp_fieldsize (void) {
 void timer_setup (int enable) {
 	static struct itimerval tbuf;
 	tbuf.it_interval.tv_sec  = 0;//TODO: make configurable, TODO: speed up 
-	tbuf.it_interval.tv_usec = 300000;
+	tbuf.it_interval.tv_usec = (1000000/g.f)-1; /*WARN: 1 <= g.f <= 999999*/
 
 	if (enable) {
 		g.t = time(NULL);
