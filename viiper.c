@@ -206,7 +206,7 @@ void consume_item (struct item* i) {
 		case FOOD_10: g.p += 10; break;
 		case FOOD_20: g.p += 20; break;
 		}
-		snake_append(g.s, 0,0);   /* position doesn't matter, as item */
+		snake_append(&g.s, 0,0);   /* position doesn't matter, as item */
 		break;       /* will be reused as the head before it is drawn */
 	case BONUS:
 		//TODO: handle bonus
@@ -280,39 +280,39 @@ void show_playfield (void) {
 	printf ("%f", g.f);
 }
 
-void snake_append (struct snake* s, int row, int col) {
+void snake_append (struct snake** s, int row, int col) {
 	struct snake* new = malloc (sizeof(struct snake));
 	new->r = row;
 	new->c = col;
 	new->next = NULL;
 
-	struct snake* p = s;
-	while (p->next) p = p->next;
-	p->next = new;
+	if (*s) {
+		struct snake* p = *s;
+		while (p->next) p = p->next;
+		p->next = new;
+	} else {
+		*s = new;
+	}
 }
 
 void init_snake() {
-	g.s = malloc (sizeof(struct snake));
-	g.s->r = g.h/2;
-	g.s->c = g.w/2;
-	g.s->next=NULL;
-
-	for (int i = 1; i < op.l; i++)
-		snake_append(g.s, g.h/2, g.w/2-i);
+	for (int i = 0; i < op.l; i++)
+		snake_append(&g.s, g.h/2, g.w/2-i);
 }
+
+#define free_ll(head) do{ \
+	while (head) { \
+		void* tmp = head; \
+		head = head->next; \
+		free(tmp); \
+	} \
+}while(0)
 
 void quit (void) {
 	screen_setup(0);
-	for (struct snake* s = g.s; s;) {
-		struct snake* tmp = s->next;
-		free (s);
-		s = tmp;
-	}
-	for (struct item* i = g.i; i;) {
-		struct item* tmp = i->next;
-		free (i);
-		i = tmp;
-	}
+	free_ll(g.s);
+	free_ll(g.i);
+	free_ll(g.n); //TODO: doesn't get free'd correctly
 }
 
 enum esc_states {
@@ -357,7 +357,7 @@ int getctrlseq (void) {
 
 void append_movement (int dir) {
 	struct directions* n;
-	for (n = g.n; n && n->next; n = n->next); /* advance to the end, if any */
+	for (n = g.n; n && n->next; n = n->next); /* advance to the end */
 	if (n && n->d == dir) return; /* don't add the same direction twice */
 
 	struct directions* new_event = malloc (sizeof(struct directions));

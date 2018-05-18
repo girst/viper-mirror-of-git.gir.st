@@ -60,7 +60,7 @@ void snake_advance (void);
 void spawn_item (int type, int value);
 void consume_item (struct item* i);
 void show_playfield (void);
-void snake_append (struct snake* s, int row, int col);
+void snake_append (struct snake** s, int row, int col);
 void init_snake();
 void quit (void);
 int getctrlseq (void);
