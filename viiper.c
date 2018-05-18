@@ -261,7 +261,7 @@ void show_playfield (void) {
 			(s->next->c > s->c) ? EAST:
 			(s->next->c < s->c) ? WEST:NONE;
 
-		printf ("\033[%sm", color==-1?"91":color?"92":"32");
+		printf ("\033[%sm", color==-1?"1m\033[92":color?"92":"32"); //TODO: clean this up
 		print (op.scheme->snake[predecessor][successor]);
 		printf ("\033[0m");
 		last = s;
