@@ -356,16 +356,18 @@ int getctrlseq (void) {
 }
 
 void append_movement (int dir) {
+	struct directions* n;
+	for (n = g.n; n && n->next; n = n->next); /* advance to the end, if any */
+	if (n && n->d == dir) return; /* don't add the same direction twice */
+
 	struct directions* new_event = malloc (sizeof(struct directions));
 	new_event->d = dir;
 	new_event->next = NULL;
-	if (g.n == NULL) {
+
+	if (g.n == NULL)
 		g.n = new_event;
-	} else {
-		struct directions* n;
-		for (n = g.n; n->next; n = n->next);
+	else
 		n->next = new_event;
-	}
 }
 
 int get_movement (void) {
