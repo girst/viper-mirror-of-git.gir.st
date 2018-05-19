@@ -41,7 +41,7 @@
 #define COL_OFFSET 1
 #define LINE_OFFSET 1
 #define LINES_AFTER 1
-#define CW 2 /* cell width */
+#define CW op.scheme->cell_width
 
 struct game {
 	int w; /* field width */
@@ -69,19 +69,35 @@ int main (int argc, char** argv) {
 	g.h = 20;
 	op.l = 10;
 	op.s = 8;
-	op.scheme = &unic0de; //TODO: expose to getopt() once more sets are available
+	op.scheme = &unic0de;
 
 	int optget;
 	opterr = 0; /* don't print message on unrecognized option */
-	while ((optget = getopt (argc, argv, "+h")) != -1) {
+	while ((optget = getopt (argc, argv, "+s:dh")) != -1) {
 		switch (optget) {
+		case 's':
+			op.s = atof(optarg);
+			if (op.s < 1) {
+				fprintf (stderr, SHORTHELP "speed must be >= 1\n", argv[0]);
+				return 1;
+			}
+			break;
+		case 'd': op.scheme = &vt220_charset; break;
 		case 'h':
 		default: 
 			fprintf (stderr, SHORTHELP LONGHELP, argv[0]);
 			return !(optget=='h');
 		}
 	} if (optind < argc) { /* parse Fieldspec */
+		int n = sscanf (argv[optind], "%dx%d", &g.w, &g.h);
+
+		if (n < 2) {
+			fprintf (stderr, SHORTHELP "FIELDSIZE is WxH (width 'x' height)\n", argv[0]);
+			return 1;
+		}
 	}
+
+	clamp_fieldsize();
 
 	srand(time(0));
 	signal_setup();
@@ -94,6 +110,7 @@ int main (int argc, char** argv) {
 		printf ("you died :(");
 		fflush(stdout);
 		sleep(5);
+		exit(0);
 	}
 
 	//TODO: call viiper() in a game loop
@@ -114,18 +131,10 @@ int viiper(void) {
 
 	for(;;) {
 		switch (getctrlseq()) {
-		case '+': g.v++;timer_setup(1);break; //TODO: temporary, to set speed
-		case '#': if (g.v > 1) g.v--;timer_setup(1); break; //TODO: temporary, to set speed
-		case '\n': spawn_item(FOOD, rand() % NUM_FOODS); break; //TODO: for debugging segfault
-
-		case CTRSEQ_CURSOR_LEFT:
-		case 'h': append_movement(WEST);  break;
-		case CTRSEQ_CURSOR_DOWN:
-		case 'j': append_movement(SOUTH); break;
-		case CTRSEQ_CURSOR_UP:
-		case 'k': append_movement(NORTH); break;
-		case CTRSEQ_CURSOR_RIGHT:
-		case 'l': append_movement(EAST);  break;
+		case CTRSEQ_CURSOR_LEFT: case 'h':append_movement(WEST);  break;
+		case CTRSEQ_CURSOR_DOWN: case 'j':append_movement(SOUTH); break;
+		case CTRSEQ_CURSOR_UP:   case 'k':append_movement(NORTH); break;
+		case CTRSEQ_CURSOR_RIGHT:case 'l':append_movement(EAST);  break;
 		case 'p': /*TODO: pause*/ break;
 		case 'r': /*TODO:restart*/ return 0;
 		case 'q': return 0;
@@ -190,11 +199,10 @@ try_again:
 	row = rand() % g.h;
 	col = rand() % g.w;
 	/* loop through snake to check if we aren't on it */
-	//TODO: inefficient as snake gets longer; near impossible in the end
+	//WARN: inefficient as snake gets longer; near impossible in the end
 	for (struct snake* s = g.s; s; s = s->next)
 		if (s->r == row && s->c == col) goto try_again;
 
-	//3. get item from category TODO
 	struct item* new_item = malloc (sizeof(struct item));
 	new_item->r = row;
 	new_item->c = col;
@@ -231,14 +239,9 @@ void consume_item (struct item* i) {
 }
 
 void show_playfield (void) {
-	//int score_width = g.p > 9999?6:4;
-	int score_width = 4;             //        v- = the -| spacer |-
-	float half_width = (g.w - score_width/CW - 2)/2.0; //TODO: this whole endavour is ugly
 	/* top border */
 	print(BORDER(T,L));
-	printm (half_width, BORDER(T,C)); //TODO: i bet this breaks in dec mode
-	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
-	printm ((int)(half_width+.5), BORDER(T,C));
+	printm (g.w, BORDER(T,C));
 	printf ("%s\n", BORDER(T,R));
 
 	/* main area */
@@ -249,6 +252,11 @@ void show_playfield (void) {
 	print(BORDER(B,L));
 	printm (g.w, BORDER(B,C));
 	print (BORDER(B,R));
+
+	/* print score */
+	int score_width = g.p > 9999?6:4;
+	move_ph (0, (g.w*CW-score_width)/2);
+	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
 
 	/* print snake */
 	struct snake* last = NULL;
@@ -267,7 +275,7 @@ void show_playfield (void) {
 			(s->next->c > s->c) ? EAST:
 			(s->next->c < s->c) ? WEST:NONE;
 
-		printf ("\033[%sm", color==-1?"1m\033[92":color?"92":"32"); //TODO: clean this up
+		printf ("\033[%sm", color==-1?"92;1":color?"92":"32"); //TODO: clean this up
 		print (op.scheme->snake[predecessor][successor]);
 		printf ("\033[0m");
 		last = s;
@@ -280,10 +288,6 @@ void show_playfield (void) {
 		if (i->t == FOOD) print (op.scheme->item[i->v]);
 		else if (i->t==BONUS) /* TODO: print bonus */;
 	}
-
-	//TODO: temporarily print speed
-	move_ph (g.h+LINE_OFFSET, g.w);
-	printf ("%f", g.v);
 }
 
 void snake_append (struct snake** s, int row, int col) {
@@ -318,7 +322,7 @@ void quit (void) {
 	screen_setup(0);
 	free_ll(g.s);
 	free_ll(g.i);
-	free_ll(g.n); //TODO: doesn't get free'd correctly
+	free_ll(g.n);
 }
 
 enum esc_states {
@@ -396,11 +400,11 @@ void clamp_fieldsize (void) { //TODO: use
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
-	if (g.w < 1) g.w = 1;
+	if (g.w < 1) g.w = 1; //TODO. sensible minimum
 	if (g.h < 1) g.h = 1;
 
 	if (COL_OFFSET + g.w*CW + COL_OFFSET > w.ws_col)
-		g.w = (w.ws_col - COL_OFFSET - COL_OFFSET)/CW; //TODO: does not work in `-d' (in xterm)
+		g.w = (w.ws_col - COL_OFFSET - COL_OFFSET)/CW-1; //TODO: does not work in `-d' (in xterm)
 	if (LINE_OFFSET + g.h + LINES_AFTER > w.ws_row)
 		g.h = w.ws_row - (LINE_OFFSET+LINES_AFTER);
 }

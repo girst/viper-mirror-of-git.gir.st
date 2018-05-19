@@ -21,6 +21,8 @@ struct scheme {
 	/* for en-/disabling e.g. DEC charset: */
 	char* init_seq;
 	char* reset_seq;
+
+	int cell_width;
 };
 
 struct scheme unic0de = {
@@ -70,6 +72,34 @@ struct scheme unic0de = {
 		[FOOD_10] = "🍎",
 		[FOOD_20] = "🥑",
 	},
+
+	.cell_width = 2,
+};
+
+struct scheme vt220_charset = {
+	.border = {
+		{"\033#6\x6c","\x71","\x6b"},
+		{"\033#6\x78","    ","\x78"},
+		{"\033#6\x6d","\x71","\x6a"},
+		{  "=","","="  },
+	},
+
+	.snake = {
+		{"@","A",">","V","<"}, //head
+		{"#","#","#","#","#"},
+		{"#","#","#","#","#"},
+		{"#","#","#","#","#"},
+		{"#","#","#","#","#"},
+	},
+
+	.item = { "$", "%", "&"},
+
+	.init_seq = "\033(0\033*B\x0f"  /* G0=Graphics, G2=ASCII, invoke G0  */
+	            "\033[?3l",         /* disable 132 column mode (DECCOLM) */
+	.reset_seq = "\033(B"    /* reset to DEC Multinational Character Set */
+	             "\033[?3h", /* reenable DECCOLM (WARN: unconditionally!)*/
+
+	.cell_width = 1,
 };
 
 #endif

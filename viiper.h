@@ -4,7 +4,9 @@
 #define SHORTHELP "%s [OPTIONS] [FIELDSIZE]\n"
 #define LONGHELP \
 	"OPTIONS:\n" \
+	"    -s(peed) N\n" \
 	"    -h(elp)\n" \
+	"    -d(ec charset)\n" \
 	"FIELDSIZE:\n" \
 	"    WxH (width 'x' height)\n" \
 	"    defaults to 30x20\n" \
