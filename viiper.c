@@ -116,6 +116,7 @@ int viiper(void) {
 		switch (getctrlseq()) {
 		case '+': g.v++;timer_setup(1);break; //TODO: temporary, to set speed
 		case '#': if (g.v > 1) g.v--;timer_setup(1); break; //TODO: temporary, to set speed
+		case '\n': spawn_item(FOOD, rand() % NUM_FOODS); break; //TODO: for debugging segfault
 
 		case CTRSEQ_CURSOR_LEFT:
 		case 'h': append_movement(WEST);  break;
@@ -229,7 +230,7 @@ void consume_item (struct item* i) {
 		if (successor) successor->prev = NULL;
 	} else {
 		predecessor->next = successor;
-		successor->prev = predecessor;
+		successor->prev = predecessor; //TODO: segfaults here if we eat the first one if more than one is on the screen
 	}
 
 	free (i);
