@@ -16,8 +16,6 @@
 
 
 #define _POSIX_C_SOURCE 2 /*for getopt and sigaction in c99, sigsetjmp*/
-#include <ctype.h>
-#include <poll.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
@@ -126,6 +124,7 @@ int viiper(void) {
 	g.v = op.s;
 
 	timer_setup(1);
+	g.t = time(NULL);
 
 	spawn_item(FOOD, rand() % NUM_FOODS); //TODO: shape distribution, so bigger values get selected less
 
@@ -135,7 +134,13 @@ int viiper(void) {
 		case CTRSEQ_CURSOR_DOWN: case 'j':append_movement(SOUTH); break;
 		case CTRSEQ_CURSOR_UP:   case 'k':append_movement(NORTH); break;
 		case CTRSEQ_CURSOR_RIGHT:case 'l':append_movement(EAST);  break;
-		case 'p': /*TODO: pause*/ break;
+		case 'p':
+			timer_setup(0);
+			move_ph (g.h/2+LINE_OFFSET, g.w*CW/2);
+			printf ("PAUSE");
+			if (getchar() == 'q') exit(0);
+			timer_setup(1);
+			break;
 		case 'r': /*TODO:restart*/ return 0;
 		case 'q': return 0;
 		case CTRL_'L':
@@ -415,7 +420,6 @@ void timer_setup (int enable) {
 	tbuf.it_interval.tv_usec = (1000000/g.v)-1; /*WARN: 1 <= g.v <= 999999*/
 
 	if (enable) {
-		g.t = time(NULL);//TODO: interferes with 'pause'
 		tbuf.it_value.tv_sec  = tbuf.it_interval.tv_sec;
 		tbuf.it_value.tv_usec = tbuf.it_interval.tv_usec;
 	} else {
