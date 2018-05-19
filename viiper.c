@@ -36,6 +36,12 @@
 #define print(str) fputs (str?str:"", stdout)
 #define CTRL_ 0x1F &
 
+#define OPPOSITE(dir) ( \
+	dir == EAST  ? WEST  :   \
+	dir == WEST  ? EAST  :   \
+	dir == NORTH ? SOUTH :   \
+	dir == SOUTH ? NORTH : -1)
+
 #define COL_OFFSET 1
 #define LINE_OFFSET 1
 #define LINES_AFTER 1
@@ -105,9 +111,9 @@ int main (int argc, char** argv) {
 	if (sigsetjmp(game_over, 1)) {
 		timer_setup(0);
 		move_ph (g.h/2+LINE_OFFSET, g.w);
-		printf ("you died :(");
+		printf ("snek ded :(");
 		fflush(stdout);
-		sleep(5);
+		sleep(2);
 		exit(0);
 	}
 
@@ -137,7 +143,7 @@ int viiper(void) {
 		case 'p':
 			timer_setup(0);
 			move_ph (g.h/2+LINE_OFFSET, g.w*CW/2);
-			printf ("PAUSE");
+			printf ("\033[5mPAUSE\033[0m"); /* blinking text */
 			if (getchar() == 'q') exit(0);
 			timer_setup(1);
 			break;
@@ -147,9 +153,9 @@ int viiper(void) {
 			screen_setup(1);
 			show_playfield();
 			break;
+		case 0x02: /* STX; gets sent when returning from SIGALRM */
 		}
 
-		print ("\033[H\033[J");
 		show_playfield ();//TODO: only redraw diff
 	}
 
@@ -158,13 +164,8 @@ int viiper(void) {
 void snake_advance (void) {
 	if (g.n) {/* new direction in the buffer */
 		int possible_new_dir = get_movement();
-		if (g.d == EAST && possible_new_dir == WEST) goto ignore_new;
-		if (g.d == WEST && possible_new_dir == EAST) goto ignore_new;
-		if (g.d == NORTH && possible_new_dir == SOUTH) goto ignore_new;
-		if (g.d == SOUTH && possible_new_dir == NORTH) goto ignore_new;
-		g.d = possible_new_dir; /*pop off a new direction if available*/
-ignore_new:
-		1;
+		if (g.d != OPPOSITE(possible_new_dir))
+			g.d = possible_new_dir;
 	}
 
 	int new_row = g.s->r +(g.d==SOUTH) -(g.d==NORTH);
@@ -178,7 +179,9 @@ ignore_new:
 		}
 	}
 
-	/*NOTE:no idea why I have to use g.w+1, but otherwise we die too early*/
+	/* NOTE: we are drawing the snake 1 column too far to the left, so it 
+	can directly touch the vertical walls. this also means that we essen-
+	tially extend the width by 1 cell, so we need to check against g.w+1. */
 	if (new_row >= g.h || new_col >= g.w+1 || new_row < 0 || new_col < 0)
 		siglongjmp(game_over, 1/*<-will be the retval of setjmp*/);
 
@@ -240,10 +243,12 @@ void consume_item (struct item* i) {
 	if (i->prev) i->prev->next = i->next;
 	else g.i = i->next;
 
-	free (i);
+	free (i); //TODO: pass to spawn_item() to save on allocations
 }
 
 void show_playfield (void) {
+	move_ph (0,0);
+
 	/* top border */
 	print(BORDER(T,L));
 	printm (g.w, BORDER(T,C));
@@ -265,9 +270,9 @@ void show_playfield (void) {
 
 	/* print snake */
 	struct snake* last = NULL;
-	int color = -1; //TODO: that's a hack
+	int color = 2;
 	for (struct snake* s = g.s; s; s = s->next) {
-		move_ph (s->r+COL_OFFSET, s->c*CW+LINE_OFFSET);
+		move_ph (s->r+LINE_OFFSET, s->c*CW+COL_OFFSET);
 		
 		int predecessor = (last==NULL)?NONE:
 			(last->r < s->r) ? NORTH:
@@ -280,11 +285,11 @@ void show_playfield (void) {
 			(s->next->c > s->c) ? EAST:
 			(s->next->c < s->c) ? WEST:NONE;
 
-		printf ("\033[%sm", color==-1?"92;1":color?"92":"32"); //TODO: clean this up
+		printf ("\033[%sm", op.scheme->color[color]);
 		print (op.scheme->snake[predecessor][successor]);
 		printf ("\033[0m");
 		last = s;
-		color = (color+1) % 2;
+		color = !color;
 	}
 
 	/* print item queue */
@@ -311,8 +316,10 @@ void snake_append (struct snake** s, int row, int col) {
 }
 
 void init_snake() {
-	for (int i = 0; i < op.l; i++)
+	for (int i = 0; i < op.l; i++) {
+		if (g.w/2-i < 0) break; /* stop if we hit left wall */
 		snake_append(&g.s, g.h/2, g.w/2-i);
+	}
 }
 
 #define free_ll(head) do{ \
@@ -374,6 +381,7 @@ void append_movement (int dir) {
 	struct directions* n;
 	for (n = g.n; n && n->next; n = n->next); /* advance to the end */
 	if (n && n->d == dir) return; /* don't add the same direction twice */
+	if (n && n->d == OPPOSITE(dir)) return; /* don't add impossible dir. */
 
 	struct directions* new_event = malloc (sizeof(struct directions));
 	new_event->d = dir;
@@ -400,13 +408,13 @@ void move_ph (int line, int col) {
 	printf ("\033[%d;%dH", line+1, col+1);
 }
 
-void clamp_fieldsize (void) { //TODO: use
+void clamp_fieldsize (void) {
 	/* clamp field size to terminal size and mouse maximum: */
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
-	if (g.w < 1) g.w = 1; //TODO. sensible minimum
-	if (g.h < 1) g.h = 1;
+	if (g.w < 10) g.w = 10;
+	if (g.h < 10) g.h = 10;
 
 	if (COL_OFFSET + g.w*CW + COL_OFFSET > w.ws_col)
 		g.w = (w.ws_col - COL_OFFSET - COL_OFFSET)/CW-1; //TODO: does not work in `-d' (in xterm)
@@ -452,12 +460,8 @@ void signal_setup (void) {
 }
 
 void signal_handler (int signum) {
-	//int dtime;
 	switch (signum) {
 	case SIGALRM:
-		//dtime = difftime (time(NULL), g.t);
-		//move_ph (1, g.w*CW-(CW%2)-3-(dtime>999));
-		//printf ("[%03d]", g.t?dtime:0);
 		snake_advance();
 		break;
 	case SIGINT:

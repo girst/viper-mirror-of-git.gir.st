@@ -15,6 +15,7 @@ struct scheme {
 	char* border[4][3];
 
 	char* snake[5][5]; /* [predecessor][successor] */
+	char* color[3]; /* 0=even, 1=odd, 2=head */
 
 	char* item[NUM_FOODS];
 
@@ -66,6 +67,7 @@ struct scheme unic0de = {
 			/*WEST */ "",
 		},
 	},
+	.color = {"32", "92", "92;1"},
 
 	.item = {
 		[FOOD_5] = "🍐",
@@ -91,6 +93,7 @@ struct scheme vt220_charset = {
 		{"#","#","#","#","#"},
 		{"#","#","#","#","#"},
 	},
+	.color = {"0", "0", "1"},
 
 	.item = { "$", "%", "&"},
 

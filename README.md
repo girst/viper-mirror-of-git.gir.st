@@ -42,3 +42,11 @@ i intend to put bonus items in the game that will only be visible for a short
 time. when they get near the end of their life, SGI-5 (blink) will make them
 blink. this is supported in gnome-term 3.28 (vte 0.52) which is supplied with
 fedora 28. [bug report](https://bugzilla.gnome.org/show_bug.cgi?id=579964)
+
+
+### strange behaviour of SIGALRM
+
+I'm using SIGALRM to advance the snake's position. during some refactoring I
+noticed that when the signal handler returns, a STX (ASCII 0x02) byte gets
+pushed onto stdin. (this is what is (accidentally) used to redraw the screen
+after a move)
