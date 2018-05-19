@@ -15,9 +15,10 @@
 *******************************************************************************/
 
 
-#define _POSIX_C_SOURCE 2 /*for getopt, sigaction in c99*/
+#define _POSIX_C_SOURCE 2 /*for getopt and sigaction in c99, sigsetjmp*/
 #include <ctype.h>
 #include <poll.h>
+#include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,9 +48,9 @@ struct game {
 	int h; /* field height */
 	int d; /* direction the snake is looking */
 	int t; /* time of game start */
-	int p; /* score */ //TODO: rename?
-	float f; /* speed in moves per second */ //TODO: rename :XXX
-	struct snake* s; /* snek */ //TODO: rename to S
+	int p; /* score */
+	float v; /* velocity in moves per second */
+	struct snake* s; /* snek */
 	struct item* i; /* items (food, boni) */
 	struct directions* n;/* next direction events to process */
 } g;
@@ -59,6 +60,8 @@ struct opt {
 	int s; /* initial snake speed */
 	struct scheme* scheme;
 } op;
+
+jmp_buf game_over;
 
 int main (int argc, char** argv) {
 	/* defaults: */
@@ -85,6 +88,14 @@ int main (int argc, char** argv) {
 	screen_setup(1);
 	atexit (*quit);
 
+	if (sigsetjmp(game_over, 1)) {
+		timer_setup(0);
+		move_ph (g.h/2+LINE_OFFSET, g.w);
+		printf ("you died :(");
+		fflush(stdout);
+		sleep(5);
+	}
+
 	//TODO: call viiper() in a game loop
 	viiper();
 quit:
@@ -95,7 +106,7 @@ int viiper(void) {
 	init_snake();
 	show_playfield ();
 	g.d = EAST;
-	g.f = op.s;
+	g.v = op.s;
 
 	timer_setup(1);
 
@@ -103,8 +114,8 @@ int viiper(void) {
 
 	for(;;) {
 		switch (getctrlseq()) {
-		case '+': g.f++;timer_setup(1);break; //TODO: temporary, to set speed
-		case '#': if (g.f > 1) g.f--;timer_setup(1); break; //TODO: temporary, to set speed
+		case '+': g.v++;timer_setup(1);break; //TODO: temporary, to set speed
+		case '#': if (g.v > 1) g.v--;timer_setup(1); break; //TODO: temporary, to set speed
 
 		case CTRSEQ_CURSOR_LEFT:
 		case 'h': append_movement(WEST);  break;
@@ -136,7 +147,7 @@ void snake_advance (void) {
 		if (g.d == WEST && possible_new_dir == EAST) goto ignore_new;
 		if (g.d == NORTH && possible_new_dir == SOUTH) goto ignore_new;
 		if (g.d == SOUTH && possible_new_dir == NORTH) goto ignore_new;
-		g.d = possible_new_dir; /* pop off a new direction if available*/
+		g.d = possible_new_dir; /*pop off a new direction if available*/
 ignore_new:
 		1;
 	}
@@ -154,14 +165,14 @@ ignore_new:
 
 	/*NOTE:no idea why I have to use g.w+1, but otherwise we die too early*/
 	if (new_row >= g.h || new_col >= g.w+1 || new_row < 0 || new_col < 0)
-		exit(1); //TODO: longjump?
+		siglongjmp(game_over, 1/*<-will be the retval of setjmp*/);
 
 	struct snake* new_head;
 	struct snake* new_tail; /* former second-to-last element */
 	for (new_tail = g.s; new_tail->next->next; new_tail = new_tail->next)
 		/* use the opportunity of looping to check if we eat ourselves*/
 		if(new_tail->next->r == new_row && new_tail->next->c == new_col)
-			exit(1);
+			siglongjmp(game_over, 1/*<-will be the retval of setjmp*/);
 	new_head = new_tail->next; /* reuse element instead of malloc() */
 	new_tail->next = NULL;
 	
@@ -206,7 +217,7 @@ void consume_item (struct item* i) {
 		case FOOD_10: g.p += 10; break;
 		case FOOD_20: g.p += 20; break;
 		}
-		snake_append(&g.s, 0,0);   /* position doesn't matter, as item */
+		snake_append(&g.s, 0,0);  /* position doesn't matter, as item */
 		break;       /* will be reused as the head before it is drawn */
 	case BONUS:
 		//TODO: handle bonus
@@ -277,7 +288,7 @@ void show_playfield (void) {
 
 	//TODO: temporarily print speed
 	move_ph (g.h+LINE_OFFSET, g.w);
-	printf ("%f", g.f);
+	printf ("%f", g.v);
 }
 
 void snake_append (struct snake** s, int row, int col) {
@@ -401,8 +412,8 @@ void clamp_fieldsize (void) { //TODO: use
 
 void timer_setup (int enable) {
 	static struct itimerval tbuf;
-	tbuf.it_interval.tv_sec  = 0;//TODO: make configurable, TODO: speed up 
-	tbuf.it_interval.tv_usec = (1000000/g.f)-1; /*WARN: 1 <= g.f <= 999999*/
+	tbuf.it_interval.tv_sec  = 0;//TODO: make it speed up automatically
+	tbuf.it_interval.tv_usec = (1000000/g.v)-1; /*WARN: 1 <= g.v <= 999999*/
 
 	if (enable) {
 		g.t = time(NULL);//TODO: interferes with 'pause'

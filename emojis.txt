@@ -173,10 +173,6 @@ Compiled from [1].
     ❕ White Exclamation Mark
     ❗ Exclamation Mark
     💯 Hundred Points
-    ▪ Black Small Square
-    ▫ White Small Square
-    ◻ White Medium Square
-    ◼ Black Medium Square
     ◽ White Medium-Small Square
     ◾ Black Medium-Small Square
     ⬛ Black Large Square
