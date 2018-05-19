@@ -132,7 +132,7 @@ int viiper(void) {
 	timer_setup(1);
 	g.t = time(NULL);
 
-	spawn_item(FOOD, rand() % NUM_FOODS); //TODO: shape distribution, so bigger values get selected less
+	spawn_item(FOOD, rand() % NUM_FOODS, NULL); //TODO: shape distribution, so bigger values get selected less
 
 	for(;;) {
 		switch (getctrlseq()) {
@@ -154,6 +154,7 @@ int viiper(void) {
 			show_playfield();
 			break;
 		case 0x02: /* STX; gets sent when returning from SIGALRM */
+			break;
 		}
 
 		show_playfield ();//TODO: only redraw diff
@@ -175,7 +176,7 @@ void snake_advance (void) {
 	for (struct item* i = g.i; i; i = i->next) {
 		if (i->r == new_row && i->c == new_col) {
 			consume_item (i);
-			spawn_item(FOOD, rand() % NUM_FOODS);
+			spawn_item(FOOD, rand() % NUM_FOODS, i);
 		}
 	}
 
@@ -201,7 +202,7 @@ void snake_advance (void) {
 	g.s = new_head;
 }
 
-void spawn_item (int type, int value) {
+void spawn_item (int type, int value, struct item* p_item) {
 	int row, col;
 try_again:
 	row = rand() % g.h;
@@ -211,7 +212,10 @@ try_again:
 	for (struct snake* s = g.s; s; s = s->next)
 		if (s->r == row && s->c == col) goto try_again;
 
-	struct item* new_item = malloc (sizeof(struct item));
+	struct item* new_item;
+	if (p_item) new_item = p_item;
+	else new_item = malloc (sizeof(struct item));
+
 	new_item->r = row;
 	new_item->c = col;
 	new_item->t = type;
@@ -242,8 +246,6 @@ void consume_item (struct item* i) {
 	if (i->next) i->next->prev = i->prev;
 	if (i->prev) i->prev->next = i->next;
 	else g.i = i->next;
-
-	free (i); //TODO: pass to spawn_item() to save on allocations
 }
 
 void show_playfield (void) {

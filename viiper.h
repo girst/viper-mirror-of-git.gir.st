@@ -59,7 +59,7 @@ enum bonus_value {
 
 int viiper(void);
 void snake_advance (void);
-void spawn_item (int type, int value);
+void spawn_item (int type, int value, struct item* p_item);
 void consume_item (struct item* i);
 void show_playfield (void);
 void snake_append (struct snake** s, int row, int col);
