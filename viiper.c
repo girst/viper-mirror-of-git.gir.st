@@ -157,7 +157,7 @@ int viiper(void) {
 			break;
 		}
 
-		show_playfield ();//TODO: only redraw diff
+//		show_playfield ();//TODO: only redraw diff
 	}
 
 }
@@ -192,6 +192,7 @@ void snake_advance (void) {
 		/* use the opportunity of looping to check if we eat ourselves*/
 		if(new_tail->next->r == new_row && new_tail->next->c == new_col)
 			siglongjmp(game_over, 1/*<-will be the retval of setjmp*/);
+	int old_tail[2] = {new_tail->next->r, new_tail->next->c}; /* save it for erasing */
 	new_head = new_tail->next; /* reuse element instead of malloc() */
 	new_tail->next = NULL;
 	
@@ -200,6 +201,8 @@ void snake_advance (void) {
 	new_head->next = g.s;
 
 	g.s = new_head;
+
+	draw_sprites (old_tail[0], old_tail[1]);
 }
 
 void spawn_item (int type, int value, struct item* p_item) {
@@ -264,17 +267,18 @@ void show_playfield (void) {
 	print(BORDER(B,L));
 	printm (g.w, BORDER(B,C));
 	print (BORDER(B,R));
+}
 
-	/* print score */
-	int score_width = g.p > 9999?6:4;
-	move_ph (0, (g.w*CW-score_width)/2);
-	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
+void draw_sprites (int erase_r, int erase_c) {
+	/* erase old tail */
+	move_ph (erase_r+LINE_OFFSET, erase_c*CW+COL_OFFSET);
+	printm (CW, " ");
 
 	/* print snake */
 	struct snake* last = NULL;
 	int color = 2;
 	for (struct snake* s = g.s; s; s = s->next) {
-		move_ph (s->r+LINE_OFFSET, s->c*CW+COL_OFFSET);
+		move_ph (s->r+LINE_OFFSET, s->c*CW+COL_OFFSET); /*NOTE: all those are actually wrong; draws snake 1 col too far left*/
 		
 		int predecessor = (last==NULL)?NONE:
 			(last->r < s->r) ? NORTH:
@@ -300,6 +304,11 @@ void show_playfield (void) {
 		if (i->t == FOOD) print (op.scheme->item[i->v]);
 		else if (i->t==BONUS) /* TODO: print bonus */;
 	}
+
+	/* print score */
+	int score_width = g.p > 9999?6:4;
+	move_ph (0, (g.w*CW-score_width)/2);
+	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
 }
 
 void snake_append (struct snake** s, int row, int col) {
