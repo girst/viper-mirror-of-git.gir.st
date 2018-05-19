@@ -203,14 +203,12 @@ try_again:
 	new_item->s = time(0);
 	if (g.i) g.i->prev = new_item;
 	new_item->next = g.i;
+	new_item->prev = NULL;
 
 	g.i = new_item;
 }
 
 void consume_item (struct item* i) {
-	struct item* predecessor = i->prev;
-	struct item* successor = i->next;
-
 	switch (i->t) {
 	case FOOD:
 		switch (i->v) {
@@ -225,13 +223,9 @@ void consume_item (struct item* i) {
 		break;
 	}
 
-	if (predecessor == NULL) {
-		g.i = successor;
-		if (successor) successor->prev = NULL;
-	} else {
-		predecessor->next = successor;
-		successor->prev = predecessor; //TODO: segfaults here if we eat the first one if more than one is on the screen
-	}
+	if (i->next) i->next->prev = i->prev;
+	if (i->prev) i->prev->next = i->next;
+	else g.i = i->next;
 
 	free (i);
 }
