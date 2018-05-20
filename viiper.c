@@ -168,6 +168,8 @@ int viiper(void) {
 
 #define pop_dir() (g.k.n? g.k.c[(16+g.k.h-g.k.n--)%16] : NONE)
 void snake_advance (void) {
+	int respawn = 0;
+	struct item* i; /* temporary item (defined here to respawn at the end) */
 	int new_dir = pop_dir();
 	/* switch direction if new one is in the buffer and it won't kill us: */
 	if (new_dir && g.d != OPPOSITE(new_dir)) g.d = new_dir;
@@ -176,10 +178,10 @@ void snake_advance (void) {
 	int new_col = g.s->c +(g.d==EAST)  -(g.d==WEST);
 
 	/* detect food hit and spawn a new food */
-	for (struct item* i = g.i; i; i = i->next) {
+	for (i = g.i; i; i = i->next) {
 		if (i->r == new_row && i->c == new_col) {
 			consume_item (i);
-			spawn_item(FOOD, rand() % NUM_FOODS, i);
+			respawn = 1; /* must respawn after advancing head */
 		}
 	}
 
@@ -202,6 +204,7 @@ void snake_advance (void) {
 
 	g.s = new_head;
 
+	if (respawn) spawn_item(FOOD, rand() % NUM_FOODS, i);
 	draw_sprites (old_tail[0], old_tail[1]);
 }
 
@@ -213,7 +216,7 @@ try_again:
 	/* loop through snake to check if we aren't on it */
 	//WARN: inefficient as snake gets longer; near impossible in the end
 	for (struct snake* s = g.s; s; s = s->next)
-		if (s->r == row && s->c == col) goto try_again; //TODO: appears to not work all the time
+		if (s->r == row && s->c == col) goto try_again;
 
 	/* if we got a item buffer reuse it, otherwise create a new one: */
 	struct item* new_item;
