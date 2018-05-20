@@ -114,6 +114,7 @@ int main (int argc, char** argv) {
 
 	if (sigsetjmp(game_over, 1)) {
 		timer_setup(0);
+		show_playfield();
 		move_ph (g.h/2+LINE_OFFSET, g.w);
 		printf ("snek ded :(");
 		fflush(stdout);
@@ -191,7 +192,7 @@ void snake_advance (void) {
 		/*use the opportunity of looping to check if we eat ourselves:*/
 		if(new_tail->next->r == new_row && new_tail->next->c == new_col)
 			siglongjmp(game_over, 1);
-	int old_tail[2] = {new_tail->next->r, new_tail->next->c}; /* save it for erasing */
+	int old_tail[2] = {new_tail->next->r, new_tail->next->c};/*gets erased*/
 	new_head = new_tail->next; /* reuse element instead of malloc() */
 	new_tail->next = NULL;
 	
@@ -454,6 +455,11 @@ void signal_setup (void) {
 		perror ("SIGINT");
 		exit (1);
 	}
+
+	if (sigaction(SIGCONT, &saction, NULL) < 0 ) {
+		perror ("SIGCONT");
+		exit (1);
+	}
 }
 
 void signal_handler (int signum) {
@@ -463,6 +469,8 @@ void signal_handler (int signum) {
 		break;
 	case SIGINT:
 		exit(128+SIGINT);
+	case SIGCONT:
+		siglongjmp(game_over, 1);/*TODO:returning from ^Z breaks input*/
 	}
 }
 
