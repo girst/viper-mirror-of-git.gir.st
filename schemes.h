@@ -23,7 +23,8 @@ struct scheme {
 	char* init_seq;
 	char* reset_seq;
 
-	int cell_width;
+	int cell_width; /* number of characters per cell */
+	int display_width; /* how wide a cell appears to be */
 };
 
 struct scheme unic0de = {
@@ -76,6 +77,7 @@ struct scheme unic0de = {
 	},
 
 	.cell_width = 2,
+	.display_width = 2,
 };
 
 struct scheme vt220_charset = {
@@ -103,6 +105,7 @@ struct scheme vt220_charset = {
 	             "\033[?3h", /* reenable DECCOLM (WARN: unconditionally!)*/
 
 	.cell_width = 1,
+	.display_width = 2,
 };
 
 #endif

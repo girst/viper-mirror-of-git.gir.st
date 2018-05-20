@@ -418,7 +418,7 @@ void clamp_fieldsize (void) {
 	if (g.h < 10) g.h = 10;
 
 	if (COL_OFFSET + g.w*CW + COL_OFFSET > w.ws_col)
-		g.w = (w.ws_col - (COL_OFFSET+COL_OFFSET))/CW; //TODO: does not work in `-d' (in xterm)
+		g.w = (w.ws_col - (COL_OFFSET+COL_OFFSET))/op.scheme->display_width;
 	if (LINE_OFFSET + g.h + LINES_AFTER > w.ws_row)
 		g.h = w.ws_row - (LINE_OFFSET+LINES_AFTER);
 }
