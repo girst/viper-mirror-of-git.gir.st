@@ -20,14 +20,14 @@ r to restart, p to pause, q to quit.
  - DONE snake elongates
  - DONE unicode chars
  - DONE input buffer (so fast 180° turns get executed)
+ - DONE only redraw changing parts of the screen
+ - PoC: input out of whack when stopping (^Z) and resuming
  - timer, score, increasing speed
  - keybindings for restart, pause, redraw
- - only redraw changing parts of the screen
  - on dying: show end screen, allow restarting
- - special items: slower snake, shorter snake, etc.
- - decaying points (more points the faster you get the food)
+ - bonus/special items: slower snake, shorter snake, etc.
+ - decaying points? (more points the faster you get the food)
  - wall-wrap-around mode?
- - escape sequences out of whack when stopping (^Z) and resuming
  - fix all `grep -n TODO viiper.c`
 
 ## Notes
