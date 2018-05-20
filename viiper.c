@@ -165,12 +165,11 @@ int viiper(void) {
 
 }
 
+#define pop_dir() (g.k.n? g.k.c[(16+g.k.h-g.k.n--)%16] : NONE)
 void snake_advance (void) {
-	if (g.k.n) {/* new direction in the buffer */
-		int possible_new_dir = g.k.c[(16+g.k.h-g.k.n--)%16];
-		if (g.d != OPPOSITE(possible_new_dir))
-			g.d = possible_new_dir;
-	}
+	int new_dir = pop_dir();
+	/* switch direction if new one is in the buffer and it won't kill us: */
+	if (new_dir && g.d != OPPOSITE(new_dir)) g.d = new_dir;
 
 	int new_row = g.s->r +(g.d==SOUTH) -(g.d==NORTH);
 	int new_col = g.s->c +(g.d==EAST)  -(g.d==WEST);
@@ -396,8 +395,9 @@ int getctrlseq (void) {
 
 void append_movement (int dir) {
 	if (g.k.n > 15) return; /* no space in buffer */
-	if (g.k.n && g.k.c[(16+g.k.h-1)%16] == dir) return; /* don't add the same direction twice */
-//	if (g.k.n && g.k.c[(16+g.k.h-1)%16] == OPPOSITE(dir)) return; /* don't add impossible dir. */
+	if (g.k.n && g.k.c[(16+g.k.h-1)%16] == dir)
+		return; /* don't add the same direction twice */
+
 	g.k.c[g.k.h] = dir;
 	g.k.n++;
 	g.k.h = ++g.k.h % 16;
