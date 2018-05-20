@@ -26,14 +26,10 @@ struct item {
 	int r; /* row */
 	int c; /* column */
 	int t; /* type */
-	int v; /* value */ //TODO: make type only differentiate between food/bonus/etc, and use value (so we can randomly select one of each)
+	int v; /* value */
 	int s; /* spawn time (for bonus) */
 	struct item* prev;
 	struct item* next;
-};
-struct directions {
-	int d; /* direction */
-	struct directions* next;
 };
 enum direction {
 	NONE,
@@ -68,7 +64,6 @@ void init_snake();
 void quit (void);
 int getctrlseq (void);
 void append_movement (int d);
-int get_movement (void);
 void move_ph (int line, int col);
 void clamp_fieldsize (void);
 void timer_setup (int enable);

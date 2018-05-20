@@ -56,7 +56,11 @@ struct game {
 	float v; /* velocity in moves per second */
 	struct snake* s; /* snek */
 	struct item* i; /* items (food, boni) */
-	struct directions* n;/* next direction events to process */
+	struct directions {
+		int h; /* write head */
+		int n; /* number of elements */
+		int c[16];
+	} k; /* ring buffer for direction events */
 } g;
 
 struct opt {
@@ -82,7 +86,7 @@ int main (int argc, char** argv) {
 		case 's':
 			op.s = atof(optarg);
 			if (op.s < 1) {
-				fprintf (stderr, SHORTHELP "speed must be >= 1\n", argv[0]);
+				fprintf (stderr, "speed must be >= 1\n");
 				return 1;
 			}
 			break;
@@ -96,7 +100,7 @@ int main (int argc, char** argv) {
 		int n = sscanf (argv[optind], "%dx%d", &g.w, &g.h);
 
 		if (n < 2) {
-			fprintf (stderr, SHORTHELP "FIELDSIZE is WxH (width 'x' height)\n", argv[0]);
+			fprintf(stderr,"FIELDSIZE is WxH (width 'x' height)\n");
 			return 1;
 		}
 	}
@@ -162,8 +166,8 @@ int viiper(void) {
 }
 
 void snake_advance (void) {
-	if (g.n) {/* new direction in the buffer */
-		int possible_new_dir = get_movement();
+	if (g.k.n) {/* new direction in the buffer */
+		int possible_new_dir = g.k.c[(16+g.k.h-g.k.n--)%16];
 		if (g.d != OPPOSITE(possible_new_dir))
 			g.d = possible_new_dir;
 	}
@@ -214,6 +218,7 @@ try_again:
 	for (struct snake* s = g.s; s; s = s->next)
 		if (s->r == row && s->c == col) goto try_again; //TODO: appears to not work all the time
 
+	/* if we got a item buffer reuse it, otherwise create a new one: */
 	struct item* new_item;
 	if (p_item) new_item = p_item;
 	else new_item = malloc (sizeof(struct item));
@@ -348,7 +353,6 @@ void quit (void) {
 	screen_setup(0);
 	free_ll(g.s);
 	free_ll(g.i);
-	free_ll(g.n);
 }
 
 enum esc_states {
@@ -391,29 +395,12 @@ int getctrlseq (void) {
 }
 
 void append_movement (int dir) {
-	struct directions* n;
-	for (n = g.n; n && n->next; n = n->next); /* advance to the end */
-	if (n && n->d == dir) return; /* don't add the same direction twice */
-	if (n && n->d == OPPOSITE(dir)) return; /* don't add impossible dir. */
-
-	struct directions* new_event = malloc (sizeof(struct directions));
-	new_event->d = dir;
-	new_event->next = NULL;
-
-	if (g.n == NULL)
-		g.n = new_event;
-	else
-		n->next = new_event;
-}
-
-int get_movement (void) {
-	if (g.n == NULL) return -1;
-
-	int retval = g.n->d;
-	struct directions* delet_this = g.n;
-	g.n = g.n->next;
-	free(delet_this);
-	return retval;
+	if (g.k.n > 15) return; /* no space in buffer */
+	if (g.k.n && g.k.c[(16+g.k.h-1)%16] == dir) return; /* don't add the same direction twice */
+//	if (g.k.n && g.k.c[(16+g.k.h-1)%16] == OPPOSITE(dir)) return; /* don't add impossible dir. */
+	g.k.c[g.k.h] = dir;
+	g.k.n++;
+	g.k.h = ++g.k.h % 16;
 }
 
 void move_ph (int line, int col) {
