@@ -145,6 +145,7 @@ int viiper(void) {
 			move_ph (g.h/2+LINE_OFFSET, g.w*CW/2);
 			printf ("\033[5mPAUSE\033[0m"); /* blinking text */
 			if (getchar() == 'q') exit(0);
+			show_playfield();
 			timer_setup(1);
 			break;
 		case 'r': /*TODO:restart*/ return 0;
@@ -154,10 +155,8 @@ int viiper(void) {
 			show_playfield();
 			break;
 		case 0x02: /* STX; gets sent when returning from SIGALRM */
-			break;
+			continue;
 		}
-
-//		show_playfield ();//TODO: only redraw diff
 	}
 
 }
@@ -213,7 +212,7 @@ try_again:
 	/* loop through snake to check if we aren't on it */
 	//WARN: inefficient as snake gets longer; near impossible in the end
 	for (struct snake* s = g.s; s; s = s->next)
-		if (s->r == row && s->c == col) goto try_again;
+		if (s->r == row && s->c == col) goto try_again; //TODO: appears to not work all the time
 
 	struct item* new_item;
 	if (p_item) new_item = p_item;
@@ -267,6 +266,8 @@ void show_playfield (void) {
 	print(BORDER(B,L));
 	printm (g.w, BORDER(B,C));
 	print (BORDER(B,R));
+
+	draw_sprites (0,0);
 }
 
 void draw_sprites (int erase_r, int erase_c) {
@@ -328,8 +329,10 @@ void snake_append (struct snake** s, int row, int col) {
 
 void init_snake() {
 	for (int i = 0; i < op.l; i++) {
-		if (g.w/2-i < 0) break; /* stop if we hit left wall */
-		snake_append(&g.s, g.h/2, g.w/2-i);
+		if (g.w/2-i < 0) /* go upwards if we hit left wall */
+			snake_append(&g.s, g.h/2-(i-g.w/2), 0);
+		else /* normally just keep goint left */
+			snake_append(&g.s, g.h/2, g.w/2-i);
 	}
 }
 
@@ -357,7 +360,6 @@ enum esc_states {
 int getctrlseq (void) {
 	int c;
 	int state = START;
-	int offset = 0x20; /* never sends control chars as data */
 	while ((c = getchar()) != EOF) {
 		switch (state) {
 		case START:

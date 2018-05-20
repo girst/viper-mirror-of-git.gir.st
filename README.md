@@ -48,5 +48,4 @@ fedora 28. [bug report](https://bugzilla.gnome.org/show_bug.cgi?id=579964)
 
 I'm using SIGALRM to advance the snake's position. during some refactoring I
 noticed that when the signal handler returns, a STX (ASCII 0x02) byte gets
-pushed onto stdin. (this is what is (accidentally) used to redraw the screen
-after a move)
+pushed onto stdin.
