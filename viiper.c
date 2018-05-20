@@ -182,18 +182,15 @@ void snake_advance (void) {
 		}
 	}
 
-	/* NOTE: we are drawing the snake 1 column too far to the left, so it 
-	can directly touch the vertical walls. this also means that we essen-
-	tially extend the width by 1 cell, so we need to check against g.w+1. */
-	if (new_row >= g.h || new_col >= g.w+1 || new_row < 0 || new_col < 0)
+	if (new_row >= g.h || new_col >= g.w || new_row < 0 || new_col < 0)
 		siglongjmp(game_over, 1/*<-will be the retval of setjmp*/);
 
 	struct snake* new_head;
 	struct snake* new_tail; /* former second-to-last element */
 	for (new_tail = g.s; new_tail->next->next; new_tail = new_tail->next)
-		/* use the opportunity of looping to check if we eat ourselves*/
+		/*use the opportunity of looping to check if we eat ourselves:*/
 		if(new_tail->next->r == new_row && new_tail->next->c == new_col)
-			siglongjmp(game_over, 1/*<-will be the retval of setjmp*/);
+			siglongjmp(game_over, 1);
 	int old_tail[2] = {new_tail->next->r, new_tail->next->c}; /* save it for erasing */
 	new_head = new_tail->next; /* reuse element instead of malloc() */
 	new_tail->next = NULL;
@@ -312,7 +309,7 @@ void draw_sprites (int erase_r, int erase_c) {
 
 	/* print score */
 	int score_width = g.p > 9999?6:4;
-	move_ph (0, (g.w*CW-score_width)/2);
+	move_ph (0, (g.w*CW-score_width)/2-COL_OFFSET);
 	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
 }
 
@@ -417,7 +414,7 @@ void clamp_fieldsize (void) {
 	if (g.h < 10) g.h = 10;
 
 	if (COL_OFFSET + g.w*CW + COL_OFFSET > w.ws_col)
-		g.w = (w.ws_col - COL_OFFSET - COL_OFFSET)/CW-1; //TODO: does not work in `-d' (in xterm)
+		g.w = (w.ws_col - (COL_OFFSET+COL_OFFSET))/CW; //TODO: does not work in `-d' (in xterm)
 	if (LINE_OFFSET + g.h + LINES_AFTER > w.ws_row)
 		g.h = w.ws_row - (LINE_OFFSET+LINES_AFTER);
 }

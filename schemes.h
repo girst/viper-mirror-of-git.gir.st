@@ -28,10 +28,10 @@ struct scheme {
 
 struct scheme unic0de = {
 	.border = {
-		{"╔═", "══", "═╗"},
-		{"║ ", "  ", " ║"},
-		{"╚═", "══", "═╝"},
-		{   "╡","","╞"   },
+		{"╔", "══", "╗"},
+		{"║", "  ", "║"},
+		{"╚", "══", "╝"},
+		{  "╡","","╞"  },
 	},
 
 	.snake = { /* sorted like in the enum directions */
