@@ -52,6 +52,12 @@ enum food_value {
 enum bonus_value {
 	NUM_BONI,
 };
+enum game_state {
+	GAME_INIT,
+	GAME_START,
+	GAME_OVER,
+	GAME_EXIT,
+};
 
 int viiper(void);
 void snake_advance (void);

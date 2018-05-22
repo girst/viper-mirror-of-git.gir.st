@@ -112,19 +112,21 @@ int main (int argc, char** argv) {
 	screen_setup(1);
 	atexit (*quit);
 
-	if (sigsetjmp(game_over, 1)) {
+	switch (sigsetjmp(game_over, 1)) {
+	case GAME_INIT:
+	case GAME_START:
+		viiper();
+	case GAME_OVER:
 		timer_setup(0);
 		show_playfield();
 		move_ph (g.h/2+LINE_OFFSET, g.w);
 		printf ("snek ded :(");
 		fflush(stdout);
 		sleep(2);
+	case GAME_EXIT:
 		exit(0);
 	}
 
-	//TODO: call viiper() in a game loop
-	viiper();
-quit:
 	return 0;
 }
 
@@ -153,8 +155,8 @@ int viiper(void) {
 			show_playfield();
 			timer_setup(1);
 			break;
-		case 'r': /*TODO:restart*/ return 0;
-		case 'q': return 0;
+		case 'r': siglongjmp(game_over, GAME_START);
+		case 'q': siglongjmp(game_over, GAME_EXIT);
 		case CTRL_'L':
 			screen_setup(1);
 			show_playfield();
@@ -182,18 +184,19 @@ void snake_advance (void) {
 		if (i->r == new_row && i->c == new_col) {
 			consume_item (i);
 			respawn = 1; /* must respawn after advancing head */
+			break;
 		}
 	}
 
 	if (new_row >= g.h || new_col >= g.w || new_row < 0 || new_col < 0)
-		siglongjmp(game_over, 1/*<-will be the retval of setjmp*/);
+		siglongjmp(game_over, GAME_OVER);
 
 	struct snake* new_head;
 	struct snake* new_tail; /* former second-to-last element */
 	for (new_tail = g.s; new_tail->next->next; new_tail = new_tail->next)
 		/*use the opportunity of looping to check if we eat ourselves:*/
 		if(new_tail->next->r == new_row && new_tail->next->c == new_col)
-			siglongjmp(game_over, 1);
+			siglongjmp(game_over, GAME_OVER);
 	int old_tail[2] = {new_tail->next->r, new_tail->next->c};/*gets erased*/
 	new_head = new_tail->next; /* reuse element instead of malloc() */
 	new_tail->next = NULL;
@@ -332,7 +335,20 @@ void snake_append (struct snake** s, int row, int col) {
 	}
 }
 
+#define free_ll(head) do{ \
+	while (head) { \
+		void* tmp = head; \
+		head = head->next; \
+		free(tmp); \
+	} \
+	head = NULL; \
+}while(0)
+
 void init_snake() {
+	if (g.s)
+		free_ll(g.s);
+	if (g.i)
+		free_ll(g.i);
 	for (int i = 0; i < op.l; i++) {
 		if (g.w/2-i < 0) /* go upwards if we hit left wall */
 			snake_append(&g.s, g.h/2-(i-g.w/2), 0);
@@ -340,14 +356,6 @@ void init_snake() {
 			snake_append(&g.s, g.h/2, g.w/2-i);
 	}
 }
-
-#define free_ll(head) do{ \
-	while (head) { \
-		void* tmp = head; \
-		head = head->next; \
-		free(tmp); \
-	} \
-}while(0)
 
 void quit (void) {
 	screen_setup(0);
@@ -473,7 +481,7 @@ void signal_handler (int signum) {
 	case SIGINT:
 		exit(128+SIGINT);
 	case SIGCONT:
-		siglongjmp(game_over, 1);/*TODO:returning from ^Z breaks input*/
+		siglongjmp(game_over, GAME_EXIT);/*TODO:returning from ^Z breaks input*/
 	}
 }
 
