@@ -112,6 +112,7 @@ int main (int argc, char** argv) {
 	screen_setup(1);
 	atexit (*quit);
 
+restart:
 	switch (sigsetjmp(game_over, 1)) {
 	case GAME_INIT:
 	case GAME_START:
@@ -119,14 +120,16 @@ int main (int argc, char** argv) {
 	case GAME_OVER:
 		timer_setup(0);
 		show_playfield();
-		move_ph (g.h/2+LINE_OFFSET, g.w);
-		printf ("snek ded :(");
-		fflush(stdout);
-		sleep(2);
+		for (;;) switch (end_screen()) {
+		case 'r': goto restart;
+		case 'q': goto quit;
+		default: continue;
+		}
 	case GAME_EXIT:
-		exit(0);
+		goto quit;
 	}
 
+quit:
 	return 0;
 }
 
@@ -171,7 +174,7 @@ int viiper(void) {
 #define pop_dir() (g.k.n? g.k.c[(16+g.k.h-g.k.n--)%16] : NONE)
 void snake_advance (void) {
 	int respawn = 0;
-	struct item* i; /* temporary item (defined here to respawn at the end) */
+	struct item* i; /*temporary item (defined here to respawn at the end) */
 	int new_dir = pop_dir();
 	/* switch direction if new one is in the buffer and it won't kill us: */
 	if (new_dir && g.d != OPPOSITE(new_dir)) g.d = new_dir;
@@ -218,6 +221,7 @@ try_again:
 	col = rand() % g.w;
 	/* loop through snake to check if we aren't on it */
 	//WARN: inefficient as snake gets longer; near impossible in the end
+	//TODO: check if game won
 	for (struct snake* s = g.s; s; s = s->next)
 		if (s->r == row && s->c == col) goto try_again;
 
@@ -287,7 +291,7 @@ void draw_sprites (int erase_r, int erase_c) {
 	struct snake* last = NULL;
 	int color = 2;
 	for (struct snake* s = g.s; s; s = s->next) {
-		move_ph (s->r+LINE_OFFSET, s->c*CW+COL_OFFSET); /*NOTE: all those are actually wrong; draws snake 1 col too far left*/
+		move_ph (s->r+LINE_OFFSET, s->c*CW+COL_OFFSET);
 		
 		int predecessor = (last==NULL)?NONE:
 			(last->r < s->r) ? NORTH:
@@ -318,6 +322,30 @@ void draw_sprites (int erase_r, int erase_c) {
 	int score_width = g.p > 9999?6:4;
 	move_ph (0, (g.w*CW-score_width)/2-COL_OFFSET);
 	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
+}
+
+#define MOVE_POPUP(WIDTH, LINE) \
+	move_ph(g.h/2+LINE_OFFSET-1+LINE,(g.w*op.scheme->display_width-WIDTH)/2)
+int end_screen(void) {
+	MOVE_POPUP(11, -1);
+	print(BORDER(T,L));
+	printm (12/op.scheme->display_width, BORDER(T,C));
+	print (BORDER(T,R));
+
+	MOVE_POPUP(11, 0);
+	printf("%s GAME  OVER %s", BORDER(C,L), BORDER(C,R));
+	MOVE_POPUP(11, 1);
+	printf("%s `r' restart%s", BORDER(C,L), BORDER(C,R));
+	MOVE_POPUP(11, 2);
+	printf("%s `q' quit   %s", BORDER(C,L), BORDER(C,R));
+
+	MOVE_POPUP(11, 3);
+	print(BORDER(B,L));
+	printm (12/op.scheme->display_width, BORDER(B,C));
+	print (BORDER(B,R));
+	fflush(stdout);
+
+	return getctrlseq();
 }
 
 void snake_append (struct snake** s, int row, int col) {

@@ -21,10 +21,10 @@ r to restart, p to pause, q to quit.
  - DONE unicode chars
  - DONE input buffer (so fast 180° turns get executed)
  - DONE only redraw changing parts of the screen
- - PoC: input out of whack when stopping (^Z) and resuming
+ - DONE input out of whack when stopping (^Z) and resuming
+ - DONE keybindings for restart, pause, redraw
+ - DONE on dying: show end screen, allow restarting
  - timer, score, increasing speed
- - keybindings for restart, pause, redraw
- - on dying: show end screen, allow restarting
  - bonus/special items: slower snake, shorter snake, etc.
  - decaying points? (more points the faster you get the food)
  - wall-wrap-around mode?
