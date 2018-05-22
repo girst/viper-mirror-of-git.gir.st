@@ -45,7 +45,7 @@
 #define COL_OFFSET 1
 #define LINE_OFFSET 1
 #define LINES_AFTER 1
-#define CW op.scheme->cell_width
+#define CW op.sch->cell_width
 
 struct game {
 	int w; /* field width */
@@ -66,7 +66,7 @@ struct game {
 struct opt {
 	int l; /* initial snake length */
 	int s; /* initial snake speed */
-	struct scheme* scheme;
+	struct scheme* sch;
 } op;
 
 jmp_buf game_over;
@@ -77,7 +77,7 @@ int main (int argc, char** argv) {
 	g.h = 20;
 	op.l = 10;
 	op.s = 8;
-	op.scheme = &unic0de;
+	op.sch = &unic0de;
 
 	int optget;
 	opterr = 0; /* don't print message on unrecognized option */
@@ -90,7 +90,7 @@ int main (int argc, char** argv) {
 				return 1;
 			}
 			break;
-		case 'd': op.scheme = &vt220_charset; break;
+		case 'd': op.sch = &vt220_charset; break;
 		case 'h':
 		default: 
 			fprintf (stderr, SHORTHELP LONGHELP, argv[0]);
@@ -304,8 +304,8 @@ void draw_sprites (int erase_r, int erase_c) {
 			(s->next->c > s->c) ? EAST:
 			(s->next->c < s->c) ? WEST:NONE;
 
-		printf ("\033[%sm", op.scheme->color[color]);
-		print (op.scheme->snake[predecessor][successor]);
+		printf ("\033[%sm", op.sch->color[color]);
+		print (op.sch->snake[predecessor][successor]);
 		printf ("\033[0m");
 		last = s;
 		color = !color;
@@ -314,7 +314,7 @@ void draw_sprites (int erase_r, int erase_c) {
 	/* print item queue */
 	for (struct item* i = g.i; i; i = i->next) {
 		move_ph (i->r+LINE_OFFSET, i->c*CW+COL_OFFSET);
-		if (i->t == FOOD) print (op.scheme->item[i->v]);
+		if (i->t == FOOD) print (op.sch->item[i->v]);
 		else if (i->t==BONUS) /* TODO: print bonus */;
 	}
 
@@ -325,11 +325,11 @@ void draw_sprites (int erase_r, int erase_c) {
 }
 
 #define MOVE_POPUP(WIDTH, LINE) \
-	move_ph(g.h/2+LINE_OFFSET-1+LINE,(g.w*op.scheme->display_width-WIDTH)/2)
+	move_ph(g.h/2+LINE_OFFSET-1+LINE,(g.w*op.sch->display_width-WIDTH)/2)
 int end_screen(void) {
 	MOVE_POPUP(11, -1);
 	print(BORDER(T,L));
-	printm (12/op.scheme->display_width, BORDER(T,C));
+	printm (12/op.sch->display_width, BORDER(T,C));
 	print (BORDER(T,R));
 
 	MOVE_POPUP(11, 0);
@@ -341,7 +341,7 @@ int end_screen(void) {
 
 	MOVE_POPUP(11, 3);
 	print(BORDER(B,L));
-	printm (12/op.scheme->display_width, BORDER(B,C));
+	printm (12/op.sch->display_width, BORDER(B,C));
 	print (BORDER(B,R));
 	fflush(stdout);
 
@@ -454,7 +454,7 @@ void clamp_fieldsize (void) {
 	if (g.h < 10) g.h = 10;
 
 	if (COL_OFFSET + g.w*CW + COL_OFFSET > w.ws_col)
-		g.w = (w.ws_col - (COL_OFFSET+COL_OFFSET))/op.scheme->display_width;
+		g.w = (w.ws_col - 2*COL_OFFSET) / op.sch->display_width;
 	if (LINE_OFFSET + g.h + LINES_AFTER > w.ws_row)
 		g.h = w.ws_row - (LINE_OFFSET+LINES_AFTER);
 }
@@ -520,9 +520,9 @@ void screen_setup (int enable) {
 		printf ("\033[s\033[?47h"); /* save cursor, alternate screen */
 		printf ("\033[H\033[J"); /* reset cursor, clear screen */
 		printf ("\033[?25l"); /* hide cursor */
-		print (op.scheme->init_seq); /* swich charset, if necessary */
+		print (op.sch->init_seq); /* swich charset, if necessary */
 	} else {
-		print (op.scheme->reset_seq); /* reset charset, if necessary */
+		print (op.sch->reset_seq); /* reset charset, if necessary */
 		printf ("\033[?25h"); /* show cursor */
 		printf ("\033[?47l\033[u"); /* primary screen, restore cursor */
 		raw_mode(0);

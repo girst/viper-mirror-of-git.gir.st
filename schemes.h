@@ -9,7 +9,7 @@
 #define BORDER_S 3
 #define BORDER_L 0
 #define BORDER_R 2
-#define BORDER(v,h) op.scheme->border[BORDER_ ## v][BORDER_ ## h]
+#define BORDER(v,h) op.sch->border[BORDER_ ## v][BORDER_ ## h]
 
 struct scheme {
 	char* border[4][3];
