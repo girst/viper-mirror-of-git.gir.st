@@ -37,11 +37,14 @@ r to restart, p to pause, q to quit.
 to display emojis, we need a terminal that can handle a color emoji font (no
 shit, sherlock). mlterm, xterm and urxvt didn't work in my tests (mlterm might
 work if compiled correctly, the other two use bitmap fonts and i don't think
-there are any w/ emoji support). konsole will have to be tested in the future.
+there are any w/ emoji support). 
 i intend to put bonus items in the game that will only be visible for a short
 time. when they get near the end of their life, SGI-5 (blink) will make them
 blink. this is supported in gnome-term 3.28 (vte 0.52) which is supplied with
 fedora 28. [bug report](https://bugzilla.gnome.org/show_bug.cgi?id=579964)
+for KDE's konsole you'll need [this
+fontconfig](https://gist.github.com/IgnoredAmbience/7c99b6cf9a8b73c9312a71d1209d9bbb)
+and follow the steps inside.
 
 
 ### strange behaviour of SIGALRM
