@@ -481,7 +481,8 @@ void signal_handler (int signum) {
 	case SIGINT:
 		exit(128+SIGINT);
 	case SIGCONT:
-		siglongjmp(game_over, GAME_EXIT);/*TODO:returning from ^Z breaks input*/
+		screen_setup(1);
+		show_playfield();
 	}
 }
 
