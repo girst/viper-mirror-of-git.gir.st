@@ -307,9 +307,11 @@ void show_playfield (void) {
 }
 
 void draw_sprites (int erase_r, int erase_c) {
-	/* erase old tail */
-	move_ph (erase_r+LINE_OFFSET, erase_c*CW+COL_OFFSET);
-	printm (CW, " ");
+	/* erase old tail, if any */
+	if (erase_r >= 0 && erase_c >= 0) {
+		move_ph (erase_r+LINE_OFFSET, erase_c*CW+COL_OFFSET);
+		printm (CW, " ");
+	}
 
 	/* print snake */
 	struct snake* last = NULL;
