@@ -20,6 +20,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <termios.h>
@@ -112,17 +113,28 @@ int main (int argc, char** argv) {
 	screen_setup(1);
 	atexit (*quit);
 
+	char* end_screen_msg = "";
 restart:
 	switch (sigsetjmp(game_over, 1)) {
 	case GAME_INIT:
 	case GAME_START:
 		viiper();
 	case GAME_OVER:
+		end_screen_msg = "GAME  OVER";
+		goto end_screen;
+	case GAME_WON:
+		end_screen_msg = "CONGRATULATIONS!";
+		goto end_screen;
+end_screen:
 		timer_setup(0);
 		show_playfield();
-		for (;;) switch (end_screen()) {
+		for (;;) switch (end_screen(end_screen_msg)) {
 		case 'r': goto restart;
 		case 'q': goto quit;
+		case CTRL_'L':
+			screen_setup(1);
+			show_playfield();
+			break;
 		default: continue;
 		}
 	case GAME_EXIT:
@@ -216,14 +228,19 @@ void snake_advance (void) {
 
 void spawn_item (int type, int value, struct item* p_item) {
 	int row, col;
+	char occupied[g.w][g.h]; int snake_len = 0;
+	memset(*occupied, 0, g.w*g.h);
 try_again:
 	row = rand() % g.h;
 	col = rand() % g.w;
+	if (snake_len >= g.w*g.h-1) siglongjmp(game_over, GAME_WON);
 	/* loop through snake to check if we aren't on it */
-	//WARN: inefficient as snake gets longer; near impossible in the end
-	//TODO: check if game won
+	if (occupied[row][col]) goto try_again; /* shortcut */
 	for (struct snake* s = g.s; s; s = s->next)
-		if (s->r == row && s->c == col) goto try_again;
+		if (s->r == row && s->c == col) {
+			occupied[s->r][s->c] = 1; snake_len++;
+			goto try_again;
+		}
 
 	/* if we got a item buffer reuse it, otherwise create a new one: */
 	struct item* new_item;
@@ -326,22 +343,23 @@ void draw_sprites (int erase_r, int erase_c) {
 
 #define MOVE_POPUP(WIDTH, LINE) \
 	move_ph(g.h/2+LINE_OFFSET-1+LINE,(g.w*op.sch->display_width-WIDTH)/2)
-int end_screen(void) {
-	MOVE_POPUP(11, -1);
+int end_screen(char* message) {
+	int msg_w = strlen(message);
+	MOVE_POPUP(msg_w, -1);
 	print(BORDER(T,L));
-	printm (12/op.sch->display_width, BORDER(T,C));
+	printm ((msg_w+2)/op.sch->display_width, BORDER(T,C));
 	print (BORDER(T,R));
 
-	MOVE_POPUP(11, 0);
-	printf("%s GAME  OVER %s", BORDER(C,L), BORDER(C,R));
-	MOVE_POPUP(11, 1);
-	printf("%s `r' restart%s", BORDER(C,L), BORDER(C,R));
-	MOVE_POPUP(11, 2);
-	printf("%s `q' quit   %s", BORDER(C,L), BORDER(C,R));
+	MOVE_POPUP(msg_w, 0);
+	printf("%s %s %s", BORDER(C,L), message, BORDER(C,R));
+	MOVE_POPUP(msg_w, 1);
+	printf("%s `r' restart%*s%s", BORDER(C,L), msg_w-10, "", BORDER(C,R));
+	MOVE_POPUP(msg_w, 2);
+	printf("%s `q' quit%*s%s", BORDER(C,L), msg_w-7, "", BORDER(C,R));
 
-	MOVE_POPUP(11, 3);
+	MOVE_POPUP(msg_w, 3);
 	print(BORDER(B,L));
-	printm (12/op.sch->display_width, BORDER(B,C));
+	printm ((msg_w+2)/op.sch->display_width, BORDER(B,C));
 	print (BORDER(B,R));
 	fflush(stdout);
 
