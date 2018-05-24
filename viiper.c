@@ -82,12 +82,19 @@ int main (int argc, char** argv) {
 
 	int optget;
 	opterr = 0; /* don't print message on unrecognized option */
-	while ((optget = getopt (argc, argv, "+s:dh")) != -1) {
+	while ((optget = getopt (argc, argv, "+s:l:dh")) != -1) {
 		switch (optget) {
 		case 's':
 			op.s = atof(optarg);
 			if (op.s < 1) {
 				fprintf (stderr, "speed must be >= 1\n");
+				return 1;
+			}
+			break;
+		case 'l':
+			op.l = atoi(optarg);
+			if (op.s < 2 || op.s > g.w*g.h-1) {
+				fprintf (stderr, "length must be >= 2 and < W*H\n");
 				return 1;
 			}
 			break;
@@ -120,7 +127,7 @@ restart:
 	case GAME_START:
 		viiper();
 	case GAME_OVER:
-		end_screen_msg = "GAME  OVER";
+		end_screen_msg = " GAME  OVER ";
 		goto end_screen;
 	case GAME_WON:
 		end_screen_msg = "CONGRATULATIONS!";
@@ -267,7 +274,7 @@ void consume_item (struct item* i) {
 		case FOOD_10: g.p += 10; break;
 		case FOOD_20: g.p += 20; break;
 		}
-		snake_append(&g.s, 0,0);  /* position doesn't matter, as item */
+		snake_append(&g.s, -1, -1);
 		break;       /* will be reused as the head before it is drawn */
 	case BONUS:
 		//TODO: handle bonus
@@ -308,6 +315,7 @@ void draw_sprites (int erase_r, int erase_c) {
 	struct snake* last = NULL;
 	int color = 2;
 	for (struct snake* s = g.s; s; s = s->next) {
+		if (s->r < 0 || s->c < 0) continue; /*can't draw outside term.*/
 		move_ph (s->r+LINE_OFFSET, s->c*CW+COL_OFFSET);
 		
 		int predecessor = (last==NULL)?NONE:
@@ -391,15 +399,25 @@ void snake_append (struct snake** s, int row, int col) {
 }while(0)
 
 void init_snake() {
-	if (g.s)
-		free_ll(g.s);
-	if (g.i)
-		free_ll(g.i);
+	free_ll(g.s);
+	free_ll(g.i);
+
+	int direction = WEST;
+	int r = g.h/2;
+	int c = g.w/2;
+	int min_r = 0;
+	int max_r = g.h-1;
+	int min_c = 0;
+	int max_c = g.w-1;
 	for (int i = 0; i < op.l; i++) {
-		if (g.w/2-i < 0) /* go upwards if we hit left wall */
-			snake_append(&g.s, g.h/2-(i-g.w/2), 0);
-		else /* normally just keep goint left */
-			snake_append(&g.s, g.h/2, g.w/2-i);
+		switch (direction) {
+		case NORTH: r--; if(r <= min_r){direction=EAST; min_r++;}break;
+		case EAST:  c++; if(c >= max_c){direction=SOUTH;max_c--;}break;
+		case SOUTH: r++; if(r >= max_r){direction=WEST; max_r--;}break;
+		case WEST:  c--; if(c <= min_c){direction=NORTH;min_c++;}break;
+		}
+
+		snake_append(&g.s, r, c);
 	}
 }
 
