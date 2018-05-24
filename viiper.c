@@ -169,6 +169,7 @@ int viiper(void) {
 
 	for(;;) {
 		switch (getctrlseq()) {
+case '#': spawn_item(BONUS, BONUS_SNIP, NULL);
 		case CTRSEQ_CURSOR_LEFT: case 'h':append_movement(WEST);  break;
 		case CTRSEQ_CURSOR_DOWN: case 'j':append_movement(SOUTH); break;
 		case CTRSEQ_CURSOR_UP:   case 'k':append_movement(NORTH); break;
@@ -208,8 +209,8 @@ void snake_advance (void) {
 	/* detect food hit and spawn a new food */
 	for (i = g.i; i; i = i->next) {
 		if (i->r == new_row && i->c == new_col) {
+			respawn = (i->t == FOOD); /* only respawn when we ate a FOOD; must respawn after advancing head */
 			consume_item (i);
-			respawn = 1; /* must respawn after advancing head */
 			break;
 		}
 	}
@@ -283,6 +284,16 @@ void consume_item (struct item* i) {
 		snake_append(&g.s, -1, -1);
 		break;       /* will be reused as the head before it is drawn */
 	case BONUS:
+		switch (i->v) {
+		case BONUS_SNIP:
+			for (int i = 10; i && g.s->next->next; i--) { /* must have at least 2 elements, otherwise segfault during snake drawing */
+				struct snake* old_head = g.s;
+				g.s = g.s->next;
+				free (old_head);
+			}
+			show_playfield();
+			break;
+		}
 		//TODO: handle bonus
 		break;
 	}
@@ -350,8 +361,8 @@ void draw_sprites (int erase_r, int erase_c) {
 	/* print item queue */
 	for (struct item* i = g.i; i; i = i->next) {
 		move_ph (i->r+LINE_OFFSET, i->c*CW+COL_OFFSET);
-		if (i->t == FOOD) print (op.sch->item[i->v]);
-		else if (i->t==BONUS) /* TODO: print bonus */;
+		if      (i->t == FOOD)  print(op.sch->food[i->v]);
+		else if (i->t == BONUS) print(op.sch->boni[i->v]);
 	}
 
 	/* print score */

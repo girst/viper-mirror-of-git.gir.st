@@ -50,6 +50,7 @@ enum food_value {
 	NUM_FOODS,
 };
 enum bonus_value {
+	BONUS_SNIP,
 	NUM_BONI,
 };
 enum game_state {

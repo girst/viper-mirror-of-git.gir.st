@@ -17,7 +17,8 @@ struct scheme {
 	char* snake[5][5]; /* [predecessor][successor] */
 	char* color[3]; /* 0=even, 1=odd, 2=head */
 
-	char* item[NUM_FOODS];
+	char* food[NUM_FOODS];
+	char* boni[NUM_BONI];
 
 	/* for en-/disabling e.g. DEC charset: */
 	char* init_seq;
@@ -70,10 +71,13 @@ struct scheme unic0de = {
 	},
 	.color = {"32", "92", "92;1"},
 
-	.item = {
+	.food = {
 		[FOOD_5] = "🍐",
 		[FOOD_10] = "🍎",
 		[FOOD_20] = "🥑",
+	},
+	.boni = {
+		[BONUS_SNIP] = "✂️ ",
 	},
 
 	.cell_width = 2,
@@ -97,7 +101,8 @@ struct scheme vt220_charset = {
 	},
 	.color = {"0", "0", "1"},
 
-	.item = { "$", "%", "&"},
+	.food = { "$", "%", "&" },
+	.boni = { "x" },
 
 	.init_seq = "\033(0\033*B\x0f"  /* G0=Graphics, G2=ASCII, invoke G0  */
 	            "\033[?3l",         /* disable 132 column mode (DECCOLM) */
