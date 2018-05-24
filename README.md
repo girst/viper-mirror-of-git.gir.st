@@ -24,7 +24,7 @@ r to restart, p to pause, q to quit.
  - DONE input out of whack when stopping (^Z) and resuming
  - DONE keybindings for restart, pause, redraw
  - DONE on dying: show end screen, allow restarting
- - timer, score, increasing speed
+ - DONE score, increasing speed, ~~timer~~
  - bonus/special items: slower snake, shorter snake, etc.
  - decaying points? (more points the faster you get the food)
  - wall-wrap-around mode?

@@ -48,6 +48,8 @@
 #define LINES_AFTER 1
 #define CW op.sch->cell_width
 
+#define SPEEDUP_AFTER 100 /* increment speed every n points */
+
 struct game {
 	int w; /* field width */
 	int h; /* field height */
@@ -267,6 +269,8 @@ try_again:
 }
 
 void consume_item (struct item* i) {
+	int old_score = g.p;
+
 	switch (i->t) {
 	case FOOD:
 		switch (i->v) {
@@ -284,6 +288,9 @@ void consume_item (struct item* i) {
 	if (i->next) i->next->prev = i->prev;
 	if (i->prev) i->prev->next = i->next;
 	else g.i = i->next;
+
+	/* snake speedup every 100 points: */
+	if (g.p/SPEEDUP_AFTER - old_score/SPEEDUP_AFTER) g.v++;
 }
 
 void show_playfield (void) {
@@ -499,7 +506,7 @@ void clamp_fieldsize (void) {
 
 void timer_setup (int enable) {
 	static struct itimerval tbuf;
-	tbuf.it_interval.tv_sec  = 0;//TODO: make it speed up automatically
+	tbuf.it_interval.tv_sec  = 0;
 	tbuf.it_interval.tv_usec = (1000000/g.v)-1; /*WARN: 1 <= g.v <= 999999*/
 
 	if (enable) {
