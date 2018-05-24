@@ -211,8 +211,12 @@ void snake_advance (void) {
 	/* detect food hit and spawn a new food */
 	for (i = g.i; i; i = i->next) {
 		if (i->r == new_row && i->c == new_col) {
-			respawn = (i->t == FOOD); /* only respawn when we ate a FOOD; must respawn after advancing head */
 			consume_item (i);
+
+			switch (i->t) {
+			case FOOD: respawn = 1; break;
+			case BONUS: free(i); break; //TODO: reuse item buffer
+			}
 			break;
 		}
 	}
