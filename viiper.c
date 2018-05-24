@@ -162,6 +162,8 @@ int viiper(void) {
 
 	timer_setup(1);
 	g.t = time(NULL);
+	g.p = 0;
+	g.k.n = 0;
 
 	spawn_item(FOOD, rand() % NUM_FOODS, NULL); //TODO: shape distribution, so bigger values get selected less
 
