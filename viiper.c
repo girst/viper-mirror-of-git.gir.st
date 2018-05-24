@@ -49,6 +49,7 @@
 #define CW op.sch->cell_width
 
 #define SPEEDUP_AFTER 100 /* increment speed every n points */
+#define BONUS_INTERVAL 90 /* how often a bonus item is spawned */
 
 struct game {
 	int w; /* field width */
@@ -56,6 +57,7 @@ struct game {
 	int d; /* direction the snake is looking */
 	int t; /* time of game start */
 	int p; /* score */
+	int b; /* time of last bonus item spawned */
 	float v; /* velocity in moves per second */
 	struct snake* s; /* snek */
 	struct item* i; /* items (food, boni) */
@@ -164,12 +166,12 @@ int viiper(void) {
 	g.t = time(NULL);
 	g.p = 0;
 	g.k.n = 0;
+	g.b = time(NULL) + BONUS_INTERVAL;
 
 	spawn_item(FOOD, rand() % NUM_FOODS, NULL); //TODO: shape distribution, so bigger values get selected less
 
 	for(;;) {
 		switch (getctrlseq()) {
-case '#': spawn_item(BONUS, BONUS_SNIP, NULL);
 		case CTRSEQ_CURSOR_LEFT: case 'h':append_movement(WEST);  break;
 		case CTRSEQ_CURSOR_DOWN: case 'j':append_movement(SOUTH); break;
 		case CTRSEQ_CURSOR_UP:   case 'k':append_movement(NORTH); break;
@@ -286,15 +288,26 @@ void consume_item (struct item* i) {
 	case BONUS:
 		switch (i->v) {
 		case BONUS_SNIP:
-			for (int i = 10; i && g.s->next->next; i--) { /* must have at least 2 elements, otherwise segfault during snake drawing */
-				struct snake* old_head = g.s;
-				g.s = g.s->next;
-				free (old_head);
+			for (int i = 5; i && g.s->next->next; i--) {
+				struct snake* p = g.s;
+				while (p->next->next) p = p->next;
+				free (p->next);
+				p->next = NULL;
 			}
 			show_playfield();
 			break;
+		case BONUS_GROW:
+			for (int i = 5; i; i--) snake_append(&g.s, -1, -1);
+			break;
+		case BONUS_SLOW:
+			if (g.v > 1) g.v--;
+			timer_setup(1);
+			break;
+		case BONUS_FAST:
+			g.v++;
+			timer_setup(1);
+			break;
 		}
-		//TODO: handle bonus
 		break;
 	}
 
@@ -304,6 +317,15 @@ void consume_item (struct item* i) {
 
 	/* snake speedup every 100 points: */
 	if (g.p/SPEEDUP_AFTER - old_score/SPEEDUP_AFTER) g.v++;
+}
+
+void spawn_bonus(void) { //TODO: items should be removed after a timeout (and blink x seconds before timeout) if not eaten
+	if (g.b > time(NULL)) return;
+	for (struct item* i = g.i; i; i = i->next) /*don't spawn bonus*/
+		if (i->t == BONUS) return; /* if one is already there */
+
+	spawn_item(BONUS, rand() % NUM_BONI, NULL);
+	g.b = time(NULL) + BONUS_INTERVAL;
 }
 
 void show_playfield (void) {
@@ -563,6 +585,7 @@ void signal_handler (int signum) {
 	switch (signum) {
 	case SIGALRM:
 		snake_advance();
+		spawn_bonus();
 		break;
 	case SIGINT:
 		exit(128+SIGINT);

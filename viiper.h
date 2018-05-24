@@ -51,6 +51,9 @@ enum food_value {
 };
 enum bonus_value {
 	BONUS_SNIP,
+	BONUS_GROW,
+	BONUS_SLOW,
+	BONUS_FAST,
 	NUM_BONI,
 };
 enum game_state {

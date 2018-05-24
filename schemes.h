@@ -78,6 +78,9 @@ struct scheme unic0de = {
 	},
 	.boni = {
 		[BONUS_SNIP] = "✂️ ",
+		[BONUS_GROW] = "🐍",
+		[BONUS_SLOW] = "🐌",
+		[BONUS_FAST] = "🐇",
 	},
 
 	.cell_width = 2,
@@ -101,8 +104,8 @@ struct scheme vt220_charset = {
 	},
 	.color = {"0", "0", "1"},
 
-	.food = { "$", "%", "&" },
-	.boni = { "x" },
+	.food = { "$", "%", "&", },
+	.boni = { "x", "|", "s", "f", },
 
 	.init_seq = "\033(0\033*B\x0f"  /* G0=Graphics, G2=ASCII, invoke G0  */
 	            "\033[?3l",         /* disable 132 column mode (DECCOLM) */
