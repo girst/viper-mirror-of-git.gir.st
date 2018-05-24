@@ -130,6 +130,7 @@ restart:
 	case GAME_INIT:
 	case GAME_START:
 		viiper();
+		break; /* function doesn't return, but `-Wextra' complains */
 	case GAME_OVER:
 		end_screen_msg = " GAME  OVER ";
 		goto end_screen;
@@ -521,7 +522,7 @@ void append_movement (int dir) {
 
 	g.k.c[g.k.h] = dir;
 	g.k.n++;
-	g.k.h = ++g.k.h % 16;
+	g.k.h = (g.k.h+1) % 16;
 }
 
 void move_ph (int line, int col) {
