@@ -72,6 +72,7 @@ void show_playfield (void);
 void draw_sprites (int erase_r, int erase_c);
 int end_screen(char* message);
 void snake_append (struct snake** s, int row, int col);
+void remove_bonus (struct item*  i);
 void init_snake();
 void quit (void);
 int getctrlseq (void);

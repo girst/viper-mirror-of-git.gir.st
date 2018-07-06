@@ -50,6 +50,8 @@
 
 #define SPEEDUP_AFTER 100 /* increment speed every n points */
 #define BONUS_INTERVAL 90 /* how often a bonus item is spawned */
+#define BONUS_DURATION 15 /* how long one can catch the bonus */
+#define BONUS_WARN      5 /* how long before the removal to warn */
 
 struct game {
 	int w; /* field width */
@@ -57,7 +59,7 @@ struct game {
 	int d; /* direction the snake is looking */
 	int t; /* time of game start */
 	int p; /* score */
-	int b; /* time of last bonus item spawned */
+	int b; /* time of next bonus item spawn */
 	float v; /* velocity in moves per second */
 	struct snake* s; /* snek */
 	struct item* i; /* items (food, boni) */
@@ -78,7 +80,7 @@ jmp_buf game_over;
 
 int main (int argc, char** argv) {
 	/* defaults: */
-	g.w = 30; //two-char-width
+	g.w = 30;
 	g.h = 20;
 	op.l = 10;
 	op.s = 8;
@@ -177,7 +179,7 @@ int viiper(void) {
 		case CTRSEQ_CURSOR_DOWN: case 'j':append_movement(SOUTH); break;
 		case CTRSEQ_CURSOR_UP:   case 'k':append_movement(NORTH); break;
 		case CTRSEQ_CURSOR_RIGHT:case 'l':append_movement(EAST);  break;
-		case 'p':
+		case 'p': //TODO: causes bonus items to be spawned too early; have to increase all timers
 			timer_setup(0);
 			move_ph (g.h/2+LINE_OFFSET, g.w*CW/2);
 			printf ("\033[5mPAUSE\033[0m"); /* blinking text */
@@ -216,7 +218,7 @@ void snake_advance (void) {
 
 			switch (i->t) {
 			case FOOD: respawn = 1; break;
-			case BONUS: free(i); break; //TODO: reuse item buffer
+			case BONUS: remove_bonus(i); break;
 			}
 			break;
 		}
@@ -304,7 +306,7 @@ void consume_item (struct item* i) {
 		case BONUS_GROW:
 			for (int i = 5; i; i--) snake_append(&g.s, -1, -1);
 			break;
-		case BONUS_SLOW:
+		case BONUS_SLOW: //TODO: this sometimes speeds the snake up?!
 			if (g.v > 1) g.v--;
 			timer_setup(1);
 			break;
@@ -324,13 +326,18 @@ void consume_item (struct item* i) {
 	if (g.p/SPEEDUP_AFTER - old_score/SPEEDUP_AFTER) g.v++;
 }
 
-void spawn_bonus(void) { //TODO: items should be removed after a timeout (and blink x seconds before timeout) if not eaten
-	if (g.b > time(NULL)) return;
-	for (struct item* i = g.i; i; i = i->next) /*don't spawn bonus*/
-		if (i->t == BONUS) return; /* if one is already there */
-
-	spawn_item(BONUS, rand() % NUM_BONI, NULL);
-	g.b = time(NULL) + BONUS_INTERVAL;
+void spawn_bonus(void) {
+	for (struct item* i = g.i; i; i = i->next)
+		if (i->t == BONUS) { /* bonus already there */
+			if (((i->s+BONUS_DURATION)-time(NULL)) < 0) {
+				remove_bonus(i); /* remove if over lifetime */
+			}
+			return;
+		}
+	if (g.b < time(NULL)) { /* time to spawn item: */
+		spawn_item(BONUS, rand() % NUM_BONI, NULL);
+		g.b = time(NULL) + BONUS_INTERVAL;
+	}
 }
 
 void show_playfield (void) {
@@ -350,7 +357,7 @@ void show_playfield (void) {
 	printm (g.w, BORDER(B,C));
 	print (BORDER(B,R));
 
-	draw_sprites (0,0);
+	draw_sprites (-1,-1);
 }
 
 void draw_sprites (int erase_r, int erase_c) {
@@ -389,13 +396,18 @@ void draw_sprites (int erase_r, int erase_c) {
 	for (struct item* i = g.i; i; i = i->next) {
 		move_ph (i->r+LINE_OFFSET, i->c*CW+COL_OFFSET);
 		if      (i->t == FOOD)  print(op.sch->food[i->v]);
-		else if (i->t == BONUS) print(op.sch->boni[i->v]);
+		else if (i->t == BONUS) {
+			if (i->s + BONUS_DURATION-BONUS_WARN < time(NULL))
+				printf("\033[5m%s\033[25m", op.sch->boni[i->v]);
+			else print(op.sch->boni[i->v]);
+		}
 	}
 
 	/* print score */
 	int score_width = g.p > 9999?6:4;
 	move_ph (0, (g.w*CW-score_width)/2-COL_OFFSET);
 	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
+printf ("->%f<-", g.v); //TODO: debug only! (BONUS_SLOW)
 }
 
 #define MOVE_POPUP(WIDTH, LINE) \
@@ -436,6 +448,16 @@ void snake_append (struct snake** s, int row, int col) {
 	} else {
 		*s = new;
 	}
+}
+
+void remove_bonus (struct item*  i) {
+	if (i->next) i->next->prev = i->prev;
+	if (i->prev) i->prev->next = i->next;
+	else g.i = i->next;
+
+	draw_sprites (i->r, i->c); /* overwrite sprite */
+
+	free(i);
 }
 
 #define free_ll(head) do{ \
