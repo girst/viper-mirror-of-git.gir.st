@@ -5,11 +5,12 @@ TODO: find a better name
 ## Dependencies
 
 You'll need either a terminal emulator with good Unicode (Emoji) support and a
-compatible font, or an actual DEC VT220 to fully enjoy the graphics of this
+compatible fonts, or an actual DEC VT220 to fully enjoy the graphics of this
 game. This is what I'd recommend:
 
  - A VTE based terminal (like GNOME Terminal and a whole bunch of others)
  - Google Noto's Color Emoji Font (Fedora: `google-noto-emoji-color-fonts.noarch`)
+ - DejaVu Sans Mono with Braille characters patched in (fetch from Ubuntu)
 
 ## Keybindings
 
@@ -56,3 +57,15 @@ and follow the steps inside.
 I'm using SIGALRM to advance the snake's position. during some refactoring I
 noticed that when the signal handler returns, a STX (ASCII 0x02) byte gets
 pushed onto stdin.
+
+### DejaVu Sans Mono: Braille Characters
+
+This font (while otherwise beautiful) does not by default include glyphs for the
+braille characters in Unicode. And gnome-terminal falls back to some very ugly
+rendition. 
+
+Ubuntu patches this font to include those glyphs, so you can just fetch it from
+there, or patch the font yourself. For this, open
+`/usr/share/fonts/dejavu/DejaVuSansMono.ttf` and `DejaVuSans.ttf` and copy the
+braille section to the Mono variant. You can save the font under a different
+name in the same directory and the fallback will then work correctly. 
