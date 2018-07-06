@@ -19,21 +19,22 @@ game. This is what I'd recommend:
 
 ## TODO
 
- - DONE base game: fixed field size, fixed speed
- - DONE food (unicode)
- - DONE put 'sprites' into `schemes.h`
- - DONE snake elongates
- - DONE unicode chars
- - DONE input buffer (so fast 180° turns get executed)
- - DONE only redraw changing parts of the screen
- - DONE input out of whack when stopping (^Z) and resuming
- - DONE keybindings for restart, pause, redraw
- - DONE on dying: show end screen, allow restarting
- - DONE score, increasing speed, ~~timer~~
- - DONE bonus/special items: slower snake, shorter snake, etc.
- - decaying points? (more points the faster you get the food)
- - wall-wrap-around mode?
- - fix all `grep -n TODO viiper.c`
+ - DONE ~~base game: fixed field size, fixed speed~~
+ - DONE ~~food (unicode)~~
+ - DONE ~~put 'sprites' into `schemes.h`~~
+ - DONE ~~snake elongates~~
+ - DONE ~~unicode chars~~
+ - DONE ~~input buffer (so fast 180° turns get executed)~~
+ - DONE ~~only redraw changing parts of the screen~~
+ - DONE ~~input out of whack when stopping (^Z) and resuming~~
+ - DONE ~~keybindings for restart, pause, redraw~~
+ - DONE ~~on dying: show end screen, allow restarting~~
+ - DONE ~~score, increasing speed, ~~timer~~~~
+ - DONE ~~bonus/special items: slower snake, shorter snake, etc.~~
+ - TODO decaying points? (more points the faster you get the food)
+ - TODO wall-wrap-around mode?
+ - TODO fix all `grep -n TODO viiper.c`
+ - TODO VT220 chrsaet based on soft downloadable character set (->minesviiper)
 
 ## Notes
 
