@@ -4,13 +4,17 @@ TODO: find a better name
 
 ## Dependencies
 
+You'll need either a terminal emulator with good Unicode (Emoji) support and a
+compatible font, or an actual DEC VT220 to fully enjoy the graphics of this
+game. This is what I'd recommend:
+
  - A VTE based terminal (like GNOME Terminal and a whole bunch of others)
  - Google Noto's Color Emoji Font (Fedora: `google-noto-emoji-color-fonts.noarch`)
 
 ## Keybindings
 
-hjkl or cursor keys move the snake. 
-r to restart, p to pause, q to quit. 
+`h`, `j`, `k`, `l` or cursor keys move the snake. 
+`r` to restart, `p` to pause, `q` to quit. 
 
 ## TODO
 
@@ -25,7 +29,7 @@ r to restart, p to pause, q to quit.
  - DONE keybindings for restart, pause, redraw
  - DONE on dying: show end screen, allow restarting
  - DONE score, increasing speed, ~~timer~~
- - bonus/special items: slower snake, shorter snake, etc.
+ - DONE bonus/special items: slower snake, shorter snake, etc.
  - decaying points? (more points the faster you get the food)
  - wall-wrap-around mode?
  - fix all `grep -n TODO viiper.c`
