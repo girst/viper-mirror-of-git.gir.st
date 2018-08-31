@@ -306,7 +306,7 @@ void consume_item (struct item* i) {
 		case BONUS_GROW:
 			for (int i = 5; i; i--) snake_append(&g.s, -1, -1);
 			break;
-		case BONUS_SLOW: //TODO: this sometimes speeds the snake up?!
+		case BONUS_SLOW:
 			if (g.v > 1) g.v--;
 			timer_setup(1);
 			break;
@@ -323,7 +323,7 @@ void consume_item (struct item* i) {
 	else g.i = i->next;
 
 	/* snake speedup every 100 points: */
-	if (g.p/SPEEDUP_AFTER - old_score/SPEEDUP_AFTER) g.v++;
+	if (g.p/SPEEDUP_AFTER - old_score/SPEEDUP_AFTER) g.v++, timer_setup(1);
 }
 
 void spawn_bonus(void) {
@@ -407,11 +407,11 @@ void draw_sprites (int erase_r, int erase_c) {
 	int score_width = g.p > 9999?6:4;
 	move_ph (0, (g.w*CW-score_width)/2-COL_OFFSET);
 	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
-printf ("->%f<-", g.v); //TODO: debug only! (BONUS_SLOW)
 }
 
 #define MOVE_POPUP(WIDTH, LINE) \
 	move_ph(g.h/2+LINE_OFFSET-1+LINE,(g.w*op.sch->display_width-WIDTH)/2)
+	//TODO: macro does not correctly centre in DEC mode
 int end_screen(char* message) {
 	int msg_w = strlen(message);
 	MOVE_POPUP(msg_w, -1);
@@ -422,6 +422,7 @@ int end_screen(char* message) {
 	MOVE_POPUP(msg_w, 0);
 	printf("%s %s %s", BORDER(C,L), message, BORDER(C,R));
 	MOVE_POPUP(msg_w, 1);
+	//TODO: requires shifting into ASCII/multilingual charset in DEC mode
 	printf("%s `r' restart%*s%s", BORDER(C,L), msg_w-10, "", BORDER(C,R));
 	MOVE_POPUP(msg_w, 2);
 	printf("%s `q' quit%*s%s", BORDER(C,L), msg_w-7, "", BORDER(C,R));
