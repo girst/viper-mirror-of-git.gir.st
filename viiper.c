@@ -57,10 +57,10 @@ struct game {
 	int w; /* field width */
 	int h; /* field height */
 	int d; /* direction the snake is looking */
-	int t; /* time of game start */
 	int p; /* score */
-	int b; /* time of next bonus item spawn */
 	float v; /* velocity in moves per second */
+	time_t t; /* time of game start */
+	time_t b; /* time of next bonus item spawn */
 	struct snake* s; /* snek */
 	struct item* i; /* items (food, boni) */
 	struct directions {
@@ -175,18 +175,11 @@ int viiper(void) {
 
 	for(;;) {
 		switch (getctrlseq()) {
-		case CTRSEQ_CURSOR_LEFT: case 'h':append_movement(WEST);  break;
-		case CTRSEQ_CURSOR_DOWN: case 'j':append_movement(SOUTH); break;
-		case CTRSEQ_CURSOR_UP:   case 'k':append_movement(NORTH); break;
-		case CTRSEQ_CURSOR_RIGHT:case 'l':append_movement(EAST);  break;
-		case 'p': //TODO: causes bonus items to be spawned too early; have to increase all timers
-			timer_setup(0);
-			move_ph (g.h/2+LINE_OFFSET, g.w*CW/2);
-			printf ("\033[5mPAUSE\033[0m"); /* blinking text */
-			if (getchar() == 'q') exit(0);
-			show_playfield();
-			timer_setup(1);
-			break;
+		case 'h': case CTRSEQ_CURSOR_LEFT: append_movement(WEST); break;
+		case 'j': case CTRSEQ_CURSOR_DOWN: append_movement(SOUTH);break;
+		case 'k': case CTRSEQ_CURSOR_UP:   append_movement(NORTH);break;
+		case 'l': case CTRSEQ_CURSOR_RIGHT:append_movement(EAST); break;
+		case 'p': pause_game(); break;
 		case 'r': siglongjmp(game_over, GAME_START);
 		case 'q': siglongjmp(game_over, GAME_EXIT);
 		case CTRL_'L':
@@ -336,7 +329,7 @@ void spawn_bonus(void) {
 		}
 	if (g.b < time(NULL)) { /* time to spawn item: */
 		spawn_item(BONUS, rand() % NUM_BONI, NULL);
-		g.b = time(NULL) + BONUS_INTERVAL;
+		g.b = time(NULL) + BONUS_INTERVAL; //TODO: only start counting after old bonus was removed/eaten
 	}
 }
 
@@ -409,6 +402,26 @@ void draw_sprites (int erase_r, int erase_c) {
 	printf ("%s %0*d %s", BORDER(S,L), score_width, g.p, BORDER(S,R));
 }
 
+void pause_game (void) {
+	time_t pause_start = time(NULL);
+	time_t pause_diff;
+	timer_setup(0);
+
+	move_ph (g.h/2+LINE_OFFSET, g.w*CW/2);
+	printf ("\033[5;7m PAUSE \033[0m"); /* blinking reverse text */
+	if (getchar() == 'q')
+		siglongjmp(game_over, GAME_EXIT);
+
+	/* update all timers, so bonus items don't get out of sync: */
+	pause_diff = time(NULL) - pause_start;
+	g.b += pause_diff;
+	for (struct item* i = g.i; i; i = i->next)
+		i->s += pause_diff;
+
+	show_playfield();
+	timer_setup(1);
+}
+
 #define MOVE_POPUP(WIDTH, LINE) \
 	move_ph(g.h/2+LINE_OFFSET-1+LINE,(g.w*op.sch->display_width-WIDTH)/2)
 	//TODO: macro does not correctly centre in DEC mode
@@ -422,7 +435,7 @@ int end_screen(char* message) {
 	MOVE_POPUP(msg_w, 0);
 	printf("%s %s %s", BORDER(C,L), message, BORDER(C,R));
 	MOVE_POPUP(msg_w, 1);
-	//TODO: requires shifting into ASCII/multilingual charset in DEC mode
+	//TODO: requires shifting into ASCII/multilingual charset in DEC mode -- put graphics into upper/right charset?
 	printf("%s `r' restart%*s%s", BORDER(C,L), msg_w-10, "", BORDER(C,R));
 	MOVE_POPUP(msg_w, 2);
 	printf("%s `q' quit%*s%s", BORDER(C,L), msg_w-7, "", BORDER(C,R));
@@ -613,7 +626,7 @@ void signal_handler (int signum) {
 	switch (signum) {
 	case SIGALRM:
 		snake_advance();
-		spawn_bonus();
+		spawn_bonus(); //TODO: currently, a bonus is spawned every x secs. should be x secs after last bonus disappeared.
 		break;
 	case SIGINT:
 		exit(128+SIGINT);

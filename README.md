@@ -2,7 +2,7 @@
 
 TODO: find a better name
 
-## Dependencies
+## Requirements
 
 You'll need either a terminal emulator with good Unicode (Emoji) support and a
 compatible fonts, or an actual DEC VT220 to fully enjoy the graphics of this
@@ -34,9 +34,15 @@ game. This is what I'd recommend:
  - TODO decaying points? (more points the faster you get the food)
  - TODO wall-wrap-around mode?
  - TODO fix all `grep -n TODO viiper.c`
- - TODO VT220 chrsaet based on soft downloadable character set (->minesviiper)
+ - TODO VT220 charset based on soft downloadable character set (->minesviiper)
 
 ## Notes
+
+### Why this program is using SIGALRM instead of multithreading
+
+One of the main reasons for making this game was to try some unconventional
+programming ideas I had. Seeing how far I can get with only a single thread was
+one of them. Some others were pure lazyness, though.
 
 ### terminal compat
 
@@ -51,7 +57,6 @@ fedora 28. [bug report](https://bugzilla.gnome.org/show_bug.cgi?id=579964)
 for KDE's konsole you'll need [this
 fontconfig](https://gist.github.com/IgnoredAmbience/7c99b6cf9a8b73c9312a71d1209d9bbb)
 and follow the steps inside.
-
 
 ### strange behaviour of SIGALRM
 

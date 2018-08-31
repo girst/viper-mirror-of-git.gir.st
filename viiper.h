@@ -70,6 +70,7 @@ void spawn_item (int type, int value, struct item* p_item);
 void consume_item (struct item* i);
 void show_playfield (void);
 void draw_sprites (int erase_r, int erase_c);
+void pause_game (void);
 int end_screen(char* message);
 void snake_append (struct snake** s, int row, int col);
 void remove_bonus (struct item*  i);
