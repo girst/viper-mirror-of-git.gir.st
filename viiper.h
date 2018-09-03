@@ -5,6 +5,7 @@
 #define LONGHELP \
 	"OPTIONS:\n" \
 	"    -s(peed) N\n" \
+	"    -l(ength) N\n" \
 	"    -h(elp)\n" \
 	"    -d(ec charset)\n" \
 	"FIELDSIZE:\n" \
