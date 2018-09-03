@@ -7,7 +7,6 @@
 	"    -s(peed) N\n" \
 	"    -l(ength) N\n" \
 	"    -h(elp)\n" \
-	"    -d(ec charset)\n" \
 	"FIELDSIZE:\n" \
 	"    WxH (width 'x' height)\n" \
 	"    defaults to 30x20\n" \
