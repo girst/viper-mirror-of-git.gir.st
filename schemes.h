@@ -10,7 +10,7 @@
 #define BORDER_L 0
 #define BORDER_R 2
 //#define BORDER(v,h) op.sch->border[BORDER_ ## v][BORDER_ ## h]
-#define BORDER(v,h) (g.b.a&&g.b.t==BONUS_WRAP?op.sch->permeable:op.sch->border) \
+#define BORDER(v,h) (g.b.t&1<<BONUS_WRAP?op.sch->permeable:op.sch->border) \
 	[BORDER_ ## v][BORDER_ ## h]
 
 struct scheme {

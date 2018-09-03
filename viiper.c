@@ -49,7 +49,7 @@
 #define CW op.sch->cell_width
 
 #define SPEEDUP_AFTER 100 /* increment speed every n points */
-#define BONUS_INTERVAL .90 /* how often a bonus item is spawned */
+#define BONUS_INTERVAL 90 /* how often a bonus item is spawned */
 #define BONUS_DURATION 15 /* how long one can catch the bonus */
 #define BONUS_WARN      5 /* how long before the removal to warn */
 
@@ -63,10 +63,9 @@ struct game {
 	struct snake* s; /* snek */
 	struct item* i; /* items (food, boni) */
 	struct bonus {
-		int a; /* bonus action active? *///TODO: obsoleted by g.b.t
-		int t; /* bonus type (enum) *///TODO: bitmask (could be more than 1 active?)
+		int t; /* bonus type (bitmask based on enum bonus_value) */
 		time_t n; /* time of next bonus item spawn */
-		time_t u; /* time until end of bonus */
+		time_t w; /* time of wall-wrap end */
 	} b; /* bonus-related values */
 	struct directions {
 		int h; /* write head */
@@ -175,7 +174,7 @@ int viiper(void) {
 	g.p = 0;
 	g.k.n = 0;
 	g.b.n = time(NULL) + BONUS_INTERVAL;
-	g.b.a = 0;
+	g.b.t = 0;
 
 	spawn_item(FOOD, rand() % NUM_FOODS, NULL); //TODO: shape distribution, so bigger values get selected less
 
@@ -223,7 +222,7 @@ void snake_advance (void) {
 		}
 	}
 
-	if (g.b.a && g.b.t == BONUS_WRAP) {
+	if (g.b.t & 1<<BONUS_WRAP) {
 	  if (new_row >= g.h) new_row = 0;
 	  if (new_col >= g.w) new_col = 0;
 	  if (new_row < 0) new_row = g.h-1;
@@ -249,10 +248,10 @@ void snake_advance (void) {
 
 	g.s = new_head;
 
-	// bonus stuff:
-	if (g.b.a && g.b.u < time(NULL)) {
-		g.b.a = 0; //disable bonusaction if it expired
-		show_playfield();//redraw correct border (TODO: allgemeiner)
+	/* bonus mode(s) still active? */
+	if (g.b.t&1<<BONUS_WRAP && g.b.w < time(NULL)) {
+		g.b.t &= ~(1<<BONUS_WRAP);
+		show_playfield();
 	}
 
 	if (respawn) spawn_item(FOOD, rand() % NUM_FOODS, i);
@@ -327,12 +326,12 @@ void consume_item (struct item* i) {
 			timer_setup(1);
 			break;
 		case BONUS_WRAP:
-			g.b.u = time(NULL)+30;
-			g.b.a = 1;
-			g.b.t = BONUS_WRAP;
+			g.b.w = time(NULL)+30;
+			g.b.t |= 1<<BONUS_WRAP;
 			show_playfield();
 			break;
 		}
+		g.b.n = time(NULL) + BONUS_INTERVAL; /*next bonus in x seconds*/
 		break;
 	}
 
@@ -354,7 +353,7 @@ void spawn_bonus(void) {
 		}
 	if (g.b.n < time(NULL)) { /* time to spawn item: */
 		spawn_item(BONUS, rand() % NUM_BONI, NULL);
-		g.b.n = time(NULL) + BONUS_INTERVAL; //TODO: only start counting after old bonus was removed/eaten
+		g.b.n = time(NULL) + BONUS_INTERVAL + BONUS_DURATION;
 	}
 }
 
@@ -651,7 +650,7 @@ void signal_handler (int signum) {
 	switch (signum) {
 	case SIGALRM:
 		snake_advance();
-		spawn_bonus(); //TODO: currently, a bonus is spawned every x secs. should be x secs after last bonus disappeared.
+		spawn_bonus();
 		break;
 	case SIGINT:
 		exit(128+SIGINT);
