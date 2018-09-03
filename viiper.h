@@ -61,6 +61,7 @@ enum bonus_value {
 	BONUS_SLOW,
 	BONUS_FAST,
 	BONUS_WRAP,
+	BONUS_STOP,
 	NUM_BONI,
 };
 enum game_state {

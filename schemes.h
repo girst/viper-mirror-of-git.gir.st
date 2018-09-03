@@ -92,6 +92,7 @@ struct scheme unic0de = {
 		[BONUS_SLOW] = "🐌",
 		[BONUS_FAST] = "🐇",
 		[BONUS_WRAP] = "🧱",
+		[BONUS_STOP] = "⏳", //alt: 🛑
 	},
 
 	.cell_width = 2,

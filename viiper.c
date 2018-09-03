@@ -53,6 +53,7 @@
 #define BONUS_INTERVAL 90 /* how often a bonus item is spawned */
 #define BONUS_DURATION 15 /* how long one can catch the bonus */
 #define BONUS_WARN      5 /* how long before the removal to warn */
+#define BONUS_STOP_NUM  5 /* how many steps the time freezes */
 
 struct game {
 	int w; /* field width */
@@ -65,6 +66,7 @@ struct game {
 	struct item* i; /* items (food, boni) */
 	struct bonus {
 		int t; /* bonus type (bitmask based on enum bonus_value) */
+		int s; /* steps left of time freeze bonus */
 		time_t n; /* time of next bonus item spawn */
 		time_t w; /* time of wall-wrap end */
 	} b; /* bonus-related values */
@@ -174,6 +176,7 @@ int viiper(void) {
 	g.p = 0;
 	g.k.n = 0;
 	g.b.n = time(NULL) + BONUS_INTERVAL;
+	g.b.s = 0;
 	g.b.t = 0;
 
 	spawn_item(FOOD, rand() % NUM_FOODS, NULL);
@@ -187,12 +190,20 @@ int viiper(void) {
 		case 'p': pause_game(); break;
 		case 'r': siglongjmp(game_over, GAME_START);
 		case 'q': siglongjmp(game_over, GAME_EXIT);
+case '\n':
+  spawn_item(BONUS, BONUS_STOP, NULL);
+  break;
 		case CTRL_'L':
 			screen_setup(1);
 			show_playfield();
 			break;
 		case 0x02: /* STX; gets sent when returning from SIGALRM */
 			continue;
+		}
+
+		if (g.b.s) { /* highjack keyboard function for time freeze */
+			snake_advance();
+			if (!--g.b.s) timer_setup(1);/*turn back on afterwards*/
 		}
 	}
 
@@ -312,7 +323,7 @@ void consume_item (struct item* i) {
 			break;
 		}
 		snake_append(&g.s, -1, -1);
-		break;       /* will be reused as the head before it is drawn */
+		break; /* will be reused as the head before it is drawn */
 	case BONUS:
 		switch (i->v) {
 		case BONUS_SNIP:
@@ -339,6 +350,10 @@ void consume_item (struct item* i) {
 			g.b.w = time(NULL)+30;
 			g.b.t |= 1<<BONUS_WRAP;
 			show_playfield();
+			break;
+		case BONUS_STOP:
+			g.b.s = BONUS_STOP_NUM; /* stop the time for 5 steps */
+			timer_setup(0);
 			break;
 		}
 		g.b.n = time(NULL) + BONUS_INTERVAL; /*next bonus in x seconds*/
