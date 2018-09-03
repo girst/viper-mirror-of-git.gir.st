@@ -44,9 +44,15 @@ enum item_type {
 	BONUS,
 };
 enum food_value {
-	FOOD_5,
-	FOOD_10,
-	FOOD_20,
+	FOOD_PEAR,
+	FOOD_WMELON,
+	FOOD_BANANA,
+	FOOD_KIWI,
+
+	FOOD_APPLER,
+	FOOD_CHERRY,
+
+	FOOD_AVOCADO,
 	NUM_FOODS,
 };
 enum bonus_value {

@@ -47,6 +47,7 @@
 #define LINE_OFFSET 1
 #define LINES_AFTER 1
 #define CW op.sch->cell_width
+#define DW op.sch->display_width
 
 #define SPEEDUP_AFTER 100 /* increment speed every n points */
 #define BONUS_INTERVAL 90 /* how often a bonus item is spawned */
@@ -296,9 +297,19 @@ void consume_item (struct item* i) {
 	switch (i->t) {
 	case FOOD:
 		switch (i->v) {
-		case FOOD_5:  g.p +=  5; break;
-		case FOOD_10: g.p += 10; break;
-		case FOOD_20: g.p += 20; break;
+		case FOOD_PEAR:
+		case FOOD_WMELON:
+		case FOOD_BANANA:
+		case FOOD_KIWI:
+			g.p +=  5;
+			break;
+		case FOOD_APPLER:
+		case FOOD_CHERRY:
+			g.p += 10;
+			break;
+		case FOOD_AVOCADO:
+			g.p += 20;
+			break;
 		}
 		snake_append(&g.s, -1, -1);
 		break;       /* will be reused as the head before it is drawn */
@@ -446,13 +457,13 @@ void pause_game (void) {
 }
 
 #define MOVE_POPUP(WIDTH, LINE) \
-	move_ph(g.h/2+LINE_OFFSET-1+LINE,(g.w*op.sch->display_width-WIDTH)/2)
+	move_ph(g.h/2+LINE_OFFSET-1+LINE,(g.w*DW-WIDTH)/2)
 	//TODO: macro does not correctly centre in DEC mode
 int end_screen(char* message) {
 	int msg_w = strlen(message);
 	MOVE_POPUP(msg_w, -1);
 	print(BORDER(T,L));
-	printm ((msg_w+2)/op.sch->display_width, BORDER(T,C));
+	printm ((msg_w+2)/DW, BORDER(T,C));
 	print (BORDER(T,R));
 
 	MOVE_POPUP(msg_w, 0);
@@ -465,7 +476,7 @@ int end_screen(char* message) {
 
 	MOVE_POPUP(msg_w, 3);
 	print(BORDER(B,L));
-	printm ((msg_w+2)/op.sch->display_width, BORDER(B,C));
+	printm ((msg_w+2)/DW, BORDER(B,C));
 	print (BORDER(B,R));
 	fflush(stdout);
 
@@ -598,7 +609,7 @@ void clamp_fieldsize (void) {
 	if (g.h < 10) g.h = 10;
 
 	if (COL_OFFSET + g.w*CW + COL_OFFSET > w.ws_col)
-		g.w = (w.ws_col - 2*COL_OFFSET) / op.sch->display_width;
+		g.w = (w.ws_col - 2*COL_OFFSET) / DW;
 	if (LINE_OFFSET + g.h + LINES_AFTER > w.ws_row)
 		g.h = w.ws_row - (LINE_OFFSET+LINES_AFTER);
 }

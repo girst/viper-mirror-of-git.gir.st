@@ -78,9 +78,13 @@ struct scheme unic0de = {
 	.color = {"32", "92", "92;1"},
 
 	.food = {
-		[FOOD_5] = "🍐",
-		[FOOD_10] = "🍎",
-		[FOOD_20] = "🥑",
+		[FOOD_PEAR]    = "🍐",
+		[FOOD_WMELON]  = "🍉",
+		[FOOD_BANANA]  = "🍌",
+		[FOOD_KIWI]    = "🥝",
+		[FOOD_APPLER]  = "🍎",
+		[FOOD_CHERRY]  = "🍒",
+		[FOOD_AVOCADO] = "🥑",
 	},
 	.boni = {
 		[BONUS_SNIP] = "✂️ ",

@@ -34,10 +34,10 @@ recommend:
  - DONE ~~score, increasing speed~~
  - DONE ~~bonus/special items: slower snake, shorter snake, etc.~~
  - DONE ~~wall-wrap-around mode?~~
+ - NAH: predatory animals trying to eat the snake? (🐉, 🐊, 🐆, 🐅, 🦁, 🐗, 🦊, 🦅)
 -->
- - TODO more food items (to shape points distribution)
+ - TODO even more food items (to shape points distribution), boni
  - TODO decaying points? (more points the faster you get the food)
- - TODO predatory animals trying to eat the snake? (🐉, 🐊, 🐆, 🐅, 🦁, 🐗, 🦊, 🦅)
  - TODO fix all `grep -n 'TODO\|XXX\|\([^:]\|^\)//' *.[ch]`
  - TODO: find a better name
 
