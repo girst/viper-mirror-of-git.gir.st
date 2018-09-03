@@ -1,5 +1,8 @@
 # VIIper - a Snake Clone for Unicode-compatible Terminals
 
+terminal + emoji = snek    
+🖳 + 💩 = 🐍
+
 TODO: find a better name
 
 ## Requirements
@@ -33,6 +36,7 @@ game. This is what I'd recommend:
  - DONE ~~bonus/special items: slower snake, shorter snake, etc.~~
  - DONE ~~wall-wrap-around mode?~~
  - TODO decaying points? (more points the faster you get the food)
+ - TODO predatory animals trying to eat the snake? (🐉, 🐊, 🐆, 🐅, 🦁, 🐗, 🦊, 🦅)
  - TODO fix all `grep -n 'TODO\|XXX\|\([^:]\|^\)//' *.[ch]`
  - TODO VT220 charset based on soft downloadable character set (->minesviiper)
 
