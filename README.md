@@ -3,8 +3,6 @@
 terminal + emoji = snek    
 🖳 + 💩 = 🐍
 
-TODO: find a better name
-
 ## Requirements
 
 You'll need either a terminal emulator with good Unicode (Emoji) support and a
@@ -32,13 +30,14 @@ game. This is what I'd recommend:
  - DONE ~~input out of whack when stopping (^Z) and resuming~~
  - DONE ~~keybindings for restart, pause, redraw~~
  - DONE ~~on dying: show end screen, allow restarting~~
- - DONE ~~score, increasing speed, ~~
+ - DONE ~~score, increasing speed~~
  - DONE ~~bonus/special items: slower snake, shorter snake, etc.~~
  - DONE ~~wall-wrap-around mode?~~
  - TODO decaying points? (more points the faster you get the food)
  - TODO predatory animals trying to eat the snake? (🐉, 🐊, 🐆, 🐅, 🦁, 🐗, 🦊, 🦅)
  - TODO fix all `grep -n 'TODO\|XXX\|\([^:]\|^\)//' *.[ch]`
  - TODO VT220 charset based on soft downloadable character set (->minesviiper)
+ - TODO: find a better name
 
 ## Notes
 
