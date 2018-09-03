@@ -108,7 +108,6 @@ int main (int argc, char** argv) {
 				return 1;
 			}
 			break;
-		case 'd': op.sch = &vt220_charset; break;
 		case 'h':
 		default: 
 			fprintf (stderr, SHORTHELP LONGHELP, argv[0]);
@@ -176,7 +175,7 @@ int viiper(void) {
 	g.b.n = time(NULL) + BONUS_INTERVAL;
 	g.b.t = 0;
 
-	spawn_item(FOOD, rand() % NUM_FOODS, NULL); //TODO: shape distribution, so bigger values get selected less
+	spawn_item(FOOD, rand() % NUM_FOODS, NULL);
 
 	for(;;) {
 		switch (getctrlseq()) {
@@ -666,9 +665,7 @@ void screen_setup (int enable) {
 		printf ("\033[s\033[?47h"); /* save cursor, alternate screen */
 		printf ("\033[H\033[J"); /* reset cursor, clear screen */
 		printf ("\033[?25l"); /* hide cursor */
-		print (op.sch->init_seq); /* swich charset, if necessary */
 	} else {
-		print (op.sch->reset_seq); /* reset charset, if necessary */
 		printf ("\033[?25h"); /* show cursor */
 		printf ("\033[?47l\033[u"); /* primary screen, restore cursor */
 		raw_mode(0);

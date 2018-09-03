@@ -6,8 +6,8 @@ terminal + emoji = snek
 ## Requirements
 
 You'll need either a terminal emulator with good Unicode (Emoji) support and a
-compatible fonts, or an actual DEC VT220 to fully enjoy the graphics of this
-game. This is what I'd recommend:
+compatible fonts to fully enjoy the graphics of this game. This is what I'd
+recommend:
 
  - A VTE based terminal (like GNOME Terminal and a whole bunch of others)
  - Google Noto's Color Emoji Font (Fedora: `google-noto-emoji-color-fonts.noarch`)
@@ -20,6 +20,7 @@ game. This is what I'd recommend:
 
 ## TODO
 
+<!--
  - DONE ~~base game: fixed field size, fixed speed~~
  - DONE ~~food (unicode)~~
  - DONE ~~put 'sprites' into `schemes.h`~~
@@ -33,10 +34,11 @@ game. This is what I'd recommend:
  - DONE ~~score, increasing speed~~
  - DONE ~~bonus/special items: slower snake, shorter snake, etc.~~
  - DONE ~~wall-wrap-around mode?~~
+-->
+ - TODO more food items (to shape points distribution)
  - TODO decaying points? (more points the faster you get the food)
  - TODO predatory animals trying to eat the snake? (🐉, 🐊, 🐆, 🐅, 🦁, 🐗, 🦊, 🦅)
  - TODO fix all `grep -n 'TODO\|XXX\|\([^:]\|^\)//' *.[ch]`
- - TODO VT220 charset based on soft downloadable character set (->minesviiper)
  - TODO: find a better name
 
 ## Notes

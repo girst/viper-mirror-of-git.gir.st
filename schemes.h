@@ -23,12 +23,8 @@ struct scheme {
 	char* food[NUM_FOODS];
 	char* boni[NUM_BONI];
 
-	/* for en-/disabling e.g. DEC charset: */
-	char* init_seq;
-	char* reset_seq;
-
-	int cell_width; /* number of characters per cell */
-	int display_width; /* how wide a cell appears to be */
+	int cell_width; /* logical cell width */
+	int display_width; /* physical cell width */
 };
 
 struct scheme unic0de = {
@@ -95,41 +91,6 @@ struct scheme unic0de = {
 	},
 
 	.cell_width = 2,
-	.display_width = 2,
-};
-
-struct scheme vt220_charset = {
-	.border = {
-		{"\033#6\x6c","\x71","\x6b"},
-		{"\033#6\x78","    ","\x78"},
-		{"\033#6\x6d","\x71","\x6a"},
-		{  "=","","="  },
-	},
-	.permeable = {//TODO: ascii-colons?
-		{"\033#6\x6c","\x71","\x6b"},
-		{"\033#6\x78","    ","\x78"},
-		{"\033#6\x6d","\x71","\x6a"},
-		{  "=","","="  },
-	},
-
-	.snake = {
-		{"@","A",">","V","<"}, //head
-		{"#","#","#","#","#"},
-		{"#","#","#","#","#"},
-		{"#","#","#","#","#"},
-		{"#","#","#","#","#"},
-	},
-	.color = {"0", "0", "1"},
-
-	.food = { "$", "%", "&", },
-	.boni = { "\033Nx", "\033N|", "\033Ns", "\033Nf", "\033Nw", },
-
-	.init_seq = "\033(0\033*B\x0f"  /* G0=Graphics, G2=ASCII, invoke G0  */
-	            "\033[?3l",         /* disable 132 column mode (DECCOLM) */
-	.reset_seq = "\033(B"    /* reset to DEC Multinational Character Set */
-	             "\033[?3h", /* reenable DECCOLM (WARN: unconditionally!)*/
-
-	.cell_width = 1,
 	.display_width = 2,
 };
 
