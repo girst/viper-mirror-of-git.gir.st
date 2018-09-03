@@ -49,7 +49,7 @@
 #define CW op.sch->cell_width
 
 #define SPEEDUP_AFTER 100 /* increment speed every n points */
-#define BONUS_INTERVAL 90 /* how often a bonus item is spawned */
+#define BONUS_INTERVAL .90 /* how often a bonus item is spawned */
 #define BONUS_DURATION 15 /* how long one can catch the bonus */
 #define BONUS_WARN      5 /* how long before the removal to warn */
 
@@ -60,9 +60,14 @@ struct game {
 	int p; /* score */
 	float v; /* velocity in moves per second */
 	time_t t; /* time of game start */
-	time_t b; /* time of next bonus item spawn */
 	struct snake* s; /* snek */
 	struct item* i; /* items (food, boni) */
+	struct bonus {
+		int a; /* bonus action active? *///TODO: obsoleted by g.b.t
+		int t; /* bonus type (enum) *///TODO: bitmask (could be more than 1 active?)
+		time_t n; /* time of next bonus item spawn */
+		time_t u; /* time until end of bonus */
+	} b; /* bonus-related values */
 	struct directions {
 		int h; /* write head */
 		int n; /* number of elements */
@@ -169,7 +174,8 @@ int viiper(void) {
 	g.t = time(NULL);
 	g.p = 0;
 	g.k.n = 0;
-	g.b = time(NULL) + BONUS_INTERVAL;
+	g.b.n = time(NULL) + BONUS_INTERVAL;
+	g.b.a = 0;
 
 	spawn_item(FOOD, rand() % NUM_FOODS, NULL); //TODO: shape distribution, so bigger values get selected less
 
@@ -217,8 +223,15 @@ void snake_advance (void) {
 		}
 	}
 
-	if (new_row >= g.h || new_col >= g.w || new_row < 0 || new_col < 0)
+	if (g.b.a && g.b.t == BONUS_WRAP) {
+	  if (new_row >= g.h) new_row = 0;
+	  if (new_col >= g.w) new_col = 0;
+	  if (new_row < 0) new_row = g.h-1;
+	  if (new_col < 0) new_col = g.w-1;
+	} else {
+	  if (new_row >= g.h || new_col >= g.w || new_row < 0 || new_col < 0)
 		siglongjmp(game_over, GAME_OVER);
+	}
 
 	struct snake* new_head;
 	struct snake* new_tail; /* former second-to-last element */
@@ -235,6 +248,12 @@ void snake_advance (void) {
 	new_head->next = g.s;
 
 	g.s = new_head;
+
+	// bonus stuff:
+	if (g.b.a && g.b.u < time(NULL)) {
+		g.b.a = 0; //disable bonusaction if it expired
+		show_playfield();//redraw correct border (TODO: allgemeiner)
+	}
 
 	if (respawn) spawn_item(FOOD, rand() % NUM_FOODS, i);
 	draw_sprites (old_tail[0], old_tail[1]);
@@ -307,6 +326,12 @@ void consume_item (struct item* i) {
 			g.v++;
 			timer_setup(1);
 			break;
+		case BONUS_WRAP:
+			g.b.u = time(NULL)+30;
+			g.b.a = 1;
+			g.b.t = BONUS_WRAP;
+			show_playfield();
+			break;
 		}
 		break;
 	}
@@ -327,9 +352,9 @@ void spawn_bonus(void) {
 			}
 			return;
 		}
-	if (g.b < time(NULL)) { /* time to spawn item: */
+	if (g.b.n < time(NULL)) { /* time to spawn item: */
 		spawn_item(BONUS, rand() % NUM_BONI, NULL);
-		g.b = time(NULL) + BONUS_INTERVAL; //TODO: only start counting after old bonus was removed/eaten
+		g.b.n = time(NULL) + BONUS_INTERVAL; //TODO: only start counting after old bonus was removed/eaten
 	}
 }
 
@@ -414,7 +439,7 @@ void pause_game (void) {
 
 	/* update all timers, so bonus items don't get out of sync: */
 	pause_diff = time(NULL) - pause_start;
-	g.b += pause_diff;
+	g.b.n += pause_diff;
 	for (struct item* i = g.i; i; i = i->next)
 		i->s += pause_diff;
 

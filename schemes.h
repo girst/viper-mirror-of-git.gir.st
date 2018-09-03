@@ -9,10 +9,13 @@
 #define BORDER_S 3
 #define BORDER_L 0
 #define BORDER_R 2
-#define BORDER(v,h) op.sch->border[BORDER_ ## v][BORDER_ ## h]
+//#define BORDER(v,h) op.sch->border[BORDER_ ## v][BORDER_ ## h]
+#define BORDER(v,h) (g.b.a&&g.b.t==BONUS_WRAP?op.sch->permeable:op.sch->border) \
+	[BORDER_ ## v][BORDER_ ## h]
 
 struct scheme {
 	char* border[4][3];
+	char* permeable[4][3]; /* for wrap-around mode */
 
 	char* snake[5][5]; /* [predecessor][successor] */
 	char* color[3]; /* 0=even, 1=odd, 2=head */
@@ -35,8 +38,15 @@ struct scheme unic0de = {
 		{"╚", "══", "╝"},
 		{  "╡","","╞"  },
 	},
+	.permeable = {//┅╍
+		{"┏", "╍╍", "┓"},
+		{"┋", "  ", "┋"},
+		{"┗", "╍╍", "┛"},
+		{  "┥","","┝"  },
+	},
 
 	.snake = { /* sorted like in the enum directions */
+	/*NOTE: same-to-same direction is for wrap-around*/
 		{/* NONE -> */
 			/*NONE */ "",
 			/*NORTH*/ "⢿⡿",
@@ -45,28 +55,28 @@ struct scheme unic0de = {
 			/*WEST */ "⣿⡷",
 		},{/* NORTH -> */
 			/*NONE */ "⢇⡸",
-			/*NORTH*/ "",
+			/*NORTH*/ "⢇⠜",
 			/*EAST */ "⢇⣈",
 			/*SOUTH*/ "⡇⢸",
 			/*WEST */ "⣁⡸",
 		},{/* EAST -> */
 			/*NONE */ "⢎⣉",
 			/*NORTH*/ "⢇⣈",
-			/*EAST */ "",
+			/*EAST */ "⠪⣉",
 			/*SOUTH*/ "⡎⢉",
 			/*WEST */ "⣉⣉",
 		},{/* SOUTH -> */
 			/*NONE */ "⡎⢱",
 			/*NORTH*/ "⡇⢸",
 			/*EAST */ "⡎⢉",
-			/*SOUTH*/ "",
+			/*SOUTH*/ "⡔⢱",
 			/*WEST */ "⡉⢱",
 		},{/* WEST -> */
 			/*NONE */ "⣉⡱",
 			/*NORTH*/ "⣁⡸",
 			/*EAST */ "⣉⣉",
 			/*SOUTH*/ "⡉⢱",
-			/*WEST */ "",
+			/*WEST */ "⣉⡢",
 		},
 	},
 	.color = {"32", "92", "92;1"},
@@ -81,6 +91,7 @@ struct scheme unic0de = {
 		[BONUS_GROW] = "🐍",
 		[BONUS_SLOW] = "🐌",
 		[BONUS_FAST] = "🐇",
+		[BONUS_WRAP] = "🧱",
 	},
 
 	.cell_width = 2,
@@ -89,6 +100,12 @@ struct scheme unic0de = {
 
 struct scheme vt220_charset = {
 	.border = {
+		{"\033#6\x6c","\x71","\x6b"},
+		{"\033#6\x78","    ","\x78"},
+		{"\033#6\x6d","\x71","\x6a"},
+		{  "=","","="  },
+	},
+	.permeable = {//TODO: ascii-colons?
 		{"\033#6\x6c","\x71","\x6b"},
 		{"\033#6\x78","    ","\x78"},
 		{"\033#6\x6d","\x71","\x6a"},
@@ -105,7 +122,7 @@ struct scheme vt220_charset = {
 	.color = {"0", "0", "1"},
 
 	.food = { "$", "%", "&", },
-	.boni = { "\033Nx", "\033N|", "\033Ns", "\033Nf", },
+	.boni = { "\033Nx", "\033N|", "\033Ns", "\033Nf", "\033Nw", },
 
 	.init_seq = "\033(0\033*B\x0f"  /* G0=Graphics, G2=ASCII, invoke G0  */
 	            "\033[?3l",         /* disable 132 column mode (DECCOLM) */

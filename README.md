@@ -29,11 +29,11 @@ game. This is what I'd recommend:
  - DONE ~~input out of whack when stopping (^Z) and resuming~~
  - DONE ~~keybindings for restart, pause, redraw~~
  - DONE ~~on dying: show end screen, allow restarting~~
- - DONE ~~score, increasing speed, ~~timer~~~~
+ - DONE ~~score, increasing speed, ~~
  - DONE ~~bonus/special items: slower snake, shorter snake, etc.~~
+ - DONE ~~wall-wrap-around mode?~~
  - TODO decaying points? (more points the faster you get the food)
- - TODO wall-wrap-around mode?
- - TODO fix all `grep -n TODO viiper.c`
+ - TODO fix all `grep -n 'TODO\|XXX\|\([^:]\|^\)//' *.[ch]`
  - TODO VT220 charset based on soft downloadable character set (->minesviiper)
 
 ## Notes
