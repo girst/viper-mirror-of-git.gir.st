@@ -53,7 +53,7 @@
 #define BONUS_INTERVAL 90 /* how often a bonus item is spawned */
 #define BONUS_DURATION 15 /* how long one can catch the bonus */
 #define BONUS_WARN      5 /* how long before the removal to warn */
-#define BONUS_STOP_NUM  5 /* how many steps the time freezes */
+#define BONUS_STOP_NUM 10 /* how many steps the time freezes */
 
 struct game {
 	int w; /* field width */
@@ -190,9 +190,6 @@ int viiper(void) {
 		case 'p': pause_game(); break;
 		case 'r': siglongjmp(game_over, GAME_START);
 		case 'q': siglongjmp(game_over, GAME_EXIT);
-case '\n':
-  spawn_item(BONUS, BONUS_STOP, NULL);
-  break;
 		case CTRL_'L':
 			screen_setup(1);
 			show_playfield();
