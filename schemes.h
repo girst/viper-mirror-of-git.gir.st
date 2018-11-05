@@ -9,9 +9,6 @@
 #define BORDER_S 3
 #define BORDER_L 0
 #define BORDER_R 2
-//#define BORDER(v,h) op.sch->border[BORDER_ ## v][BORDER_ ## h]
-#define BORDER(v,h) (g.b.t&1<<BONUS_WRAP?op.sch->permeable:op.sch->border) \
-	[BORDER_ ## v][BORDER_ ## h]
 
 struct scheme {
 	char* border[4][3];
@@ -34,7 +31,7 @@ struct scheme unic0de = {
 		{"╚", "══", "╝"},
 		{  "╡","","╞"  },
 	},
-	.permeable = {//┅╍
+	.permeable = {
 		{"┏", "╍╍", "┓"},
 		{"┋", "  ", "┋"},
 		{"┗", "╍╍", "┛"},
@@ -92,7 +89,7 @@ struct scheme unic0de = {
 		[BONUS_SLOW] = "🐌",
 		[BONUS_FAST] = "🐇",
 		[BONUS_WRAP] = "🧱",
-		[BONUS_STOP] = "⏳", //alt: 🛑
+		[BONUS_STOP] = "⏳",
 	},
 
 	.cell_width = 2,

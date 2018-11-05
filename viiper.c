@@ -37,6 +37,8 @@
 #define print(str) fputs (str?str:"", stdout)
 #define CTRL_ 0x1F &
 
+#define BORDER(v,h) (g.b.t&1<<BONUS_WRAP?op.sch->permeable:op.sch->border) \
+	[BORDER_ ## v][BORDER_ ## h]
 #define OPPOSITE(dir) ( \
 	dir == EAST  ? WEST  :   \
 	dir == WEST  ? EAST  :   \
@@ -95,7 +97,7 @@ int main (int argc, char** argv) {
 
 	int optget;
 	opterr = 0; /* don't print message on unrecognized option */
-	while ((optget = getopt (argc, argv, "+s:l:dh")) != -1) {
+	while ((optget = getopt (argc, argv, "+s:l:h")) != -1) {
 		switch (optget) {
 		case 's':
 			op.s = atof(optarg);
@@ -470,7 +472,6 @@ void pause_game (void) {
 
 #define MOVE_POPUP(WIDTH, LINE) \
 	move_ph(g.h/2+LINE_OFFSET-1+LINE,(g.w*DW-WIDTH)/2)
-	//TODO: macro does not correctly centre in DEC mode
 int end_screen(char* message) {
 	int msg_w = strlen(message);
 	MOVE_POPUP(msg_w, -1);
@@ -481,7 +482,6 @@ int end_screen(char* message) {
 	MOVE_POPUP(msg_w, 0);
 	printf("%s %s %s", BORDER(C,L), message, BORDER(C,R));
 	MOVE_POPUP(msg_w, 1);
-	//TODO: requires shifting into ASCII/multilingual charset in DEC mode -- put graphics into upper/right charset?
 	printf("%s `r' restart%*s%s", BORDER(C,L), msg_w-10, "", BORDER(C,R));
 	MOVE_POPUP(msg_w, 2);
 	printf("%s `q' quit%*s%s", BORDER(C,L), msg_w-7, "", BORDER(C,R));
