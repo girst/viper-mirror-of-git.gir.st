@@ -85,7 +85,7 @@ struct opt {
 	struct scheme* sch;
 } op;
 
-jmp_buf game_over;
+sigjmp_buf game_over;
 
 int main (int argc, char** argv) {
 	/* defaults: */
