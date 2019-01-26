@@ -662,6 +662,11 @@ void signal_setup (void) {
 		exit (1);
 	}
 
+	if (sigaction(SIGTSTP, &saction, NULL) < 0 ) {
+		perror ("SIGTSTP");
+		exit (1);
+	}
+
 	if (sigaction(SIGCONT, &saction, NULL) < 0 ) {
 		perror ("SIGCONT");
 		exit (1);
@@ -676,6 +681,11 @@ void signal_handler (int signum) {
 		break;
 	case SIGINT:
 		exit(128+SIGINT);
+	case SIGTSTP:
+		screen_setup(0);
+		signal(SIGTSTP, SIG_DFL); /* NOTE: assumes SysV semantics! */
+		raise(SIGTSTP);
+		break;
 	case SIGCONT:
 		screen_setup(1);
 		show_playfield();
