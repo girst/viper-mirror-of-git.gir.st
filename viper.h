@@ -1,5 +1,5 @@
-#ifndef __VIIPER_H__
-#define __VIIPER_H__
+#ifndef __VIPER_H__
+#define __VIPER_H__
 
 #define SHORTHELP "%s [OPTIONS] [FIELDSIZE]\n"
 #define LONGHELP \
@@ -72,7 +72,7 @@ enum game_state {
 	GAME_EXIT,
 };
 
-int viiper(void);
+int viper(void);
 void snake_advance (void);
 void spawn_item (int type, int value, struct item* p_item);
 void consume_item (struct item* i);

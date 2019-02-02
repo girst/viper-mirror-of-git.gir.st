@@ -1,15 +1,15 @@
 /*******************************************************************************
- viiper 0.1
- By Tobias Girstmair, 2018
+ viper 0.2
+ By Tobias Girstmair, 2018 - 2019
 
- ./viiper 40x25
- (see ./viiper -h for full list of options)
+ ./viper 40x25
+ (see ./viper -h for full list of options)
 
  KEYBINDINGS:  - hjkl to move
                - p to pause and resume
                - r to restart
                - q to quit
-               - (see `./minesviiper -h' for all keybindings)
+               - (see `./viper -h' for all keybindings)
 
  GNU GPL v3, see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt
 *******************************************************************************/
@@ -27,7 +27,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "viiper.h"
+#include "viper.h"
 #include "schemes.h"
 
 #define MIN(a,b) (a>b?b:a)
@@ -139,7 +139,7 @@ restart:
 	switch (sigsetjmp(game_over, 1)) {
 	case GAME_INIT:
 	case GAME_START:
-		viiper();
+		viper();
 		break; /* function doesn't return, but `-Wextra' complains */
 	case GAME_OVER:
 		end_screen_msg = " GAME  OVER ";
@@ -167,7 +167,7 @@ quit:
 	return 0;
 }
 
-int viiper(void) {
+int viper(void) {
 	init_snake();
 	show_playfield ();
 	g.d = EAST;
@@ -192,6 +192,7 @@ int viiper(void) {
 		case 'p': pause_game(); break;
 		case 'r': siglongjmp(game_over, GAME_START);
 		case 'q': siglongjmp(game_over, GAME_EXIT);
+		case'\\': {static int _;spawn_item(BONUS,_++%NUM_BONI,NULL);}break;
 		case CTRL_'L':
 			screen_setup(1);
 			show_playfield();

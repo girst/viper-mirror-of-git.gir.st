@@ -1,13 +1,12 @@
-# VIIper - a Snake Clone for Unicode-compatible Terminals
+# VIper - a Snake Clone for Unicode-compatible Terminals
 
 terminal + emoji = snek    
 🖳 + 💩 = 🐍
 
 ## Requirements
 
-You'll need either a terminal emulator with good Unicode (Emoji) support and a
-compatible fonts to fully enjoy the graphics of this game. This is what I'd
-recommend:
+You'll need a terminal emulator with good Unicode (Emoji) support and compatible
+fonts to fully enjoy the graphics of this game. This is what I'd recommend:
 
  - A VTE based terminal (like GNOME Terminal and a whole bunch of others)
  - Google Noto's Color Emoji Font (Fedora: `google-noto-emoji-color-fonts.noarch`)

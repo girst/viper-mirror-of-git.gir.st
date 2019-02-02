@@ -1,8 +1,11 @@
 .PHONY: all clean
-all: viiper
 
-viiper: viiper.c viiper.h schemes.h
-	gcc viiper.c -o viiper -g
+CFLAGS := -Wall -Wextra -pedantic -std=c99
+
+all: viper
+
+viper: viper.c viper.h schemes.h
+	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f viiper
+	rm -f viper

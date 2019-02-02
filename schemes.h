@@ -1,7 +1,7 @@
 #ifndef __SCHEMES_H__
 #define __SCHEMES_H__
 
-#include "viiper.h" /* for enum items */
+#include "viper.h" /* for enum items */
 
 #define BORDER_T 0
 #define BORDER_C 1
